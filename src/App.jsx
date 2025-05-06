@@ -10,6 +10,9 @@ import Collection from './pages/Collection';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyEmail from './pages/VerifyEmail';
+import VerifiedEmail from './pages/VerifiedEmail';
+import ResendVerification from './pages/ResendVerification';
 import Checkout from './pages/Checkout';
 import Order from './pages/Order';
 import OrderConfirmationPage from './pages/OderConfirmation';
@@ -41,6 +44,9 @@ const App = () => {
         <Route path='/contact' element={<Contact />} />
         <Route path='/login' element={<Login />} />
         <Route path='/register' element={<Register />} />
+        <Route path='/verify-email' element={<VerifyEmail />} />
+        <Route path='/verified-email' element={<VerifiedEmail />} />
+        <Route path='/resend-verification' element={<ResendVerification />} />
         <Route path='/checkout' element={<Checkout />} />
         <Route path='/order' element={<Order />} />
         <Route path='/order-success' element={<OrderConfirmationPage />} />

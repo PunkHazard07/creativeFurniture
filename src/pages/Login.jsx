@@ -13,10 +13,12 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault(); // Prevent page refresh
     setIsLoading(true);
+    setNeedsVerification(false);
 
     try {
       const loginResponse = await fetch ('http://localhost:8080/api/login', {
@@ -28,6 +30,7 @@ const Login = () => {
       });
 
       const loginData = await loginResponse.json();
+      
       if (loginResponse.ok) {
         const token = loginData.token;
         
@@ -86,11 +89,17 @@ const Login = () => {
         }
       
       } else {
-        setError(loginData.message || 'Login failed. Please try again.');
+        // Check if the issue is email verification
+        if (loginData.isVerified === false) {
+          setNeedsVerification(true);
+          setError("Please verify your email before logging in.");
+        } else {
+          setError(loginData.message || 'Login failed. Please try again.');
+        }
         setIsLoading(false);
       }
     } catch (error) {
-    console.error('Login Error:', error);
+      console.error('Login Error:', error);
       setError('An error occurred. Please try again later.');
       setIsLoading(false);
     }
@@ -103,40 +112,64 @@ const Login = () => {
         
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-gray-700">Email</label>
-            <input 
-              type="email"
-              placeholder="Enter your email"
-              value={email} 
-              onChange={(e) => setEmail(e.target.value)} 
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300 focus:outline-none"
-            />
+        {needsVerification ? (
+          <div className="text-center">
+            <p className="text-gray-600 mb-4">
+              Your email address needs to be verified. Please check your email for a verification link or request a new one.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => navigate("/resend-verification")}
+                className="w-full rounded-md bg-blue-600 py-2 px-4 text-white hover:bg-blue-700 transition-colors"
+              >
+                Resend Verification Email
+              </button>
+              <button
+                onClick={() => {
+                  setNeedsVerification(false);
+                  setError("");
+                }}
+                className="w-full rounded-md bg-gray-300 py-2 px-4 text-gray-700 hover:bg-gray-400 transition-colors"
+              >
+                Try Again
+              </button>
+            </div>
           </div>
+        ) : (
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-gray-700">Email</label>
+              <input 
+                type="email"
+                placeholder="Enter your email"
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)} 
+                required
+                className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300 focus:outline-none"
+              />
+            </div>
 
-          <div>
-            <label className="block text-gray-700">Password</label>
-            <input 
-              type="password"
-              placeholder="Enter your password"
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300 focus:outline-none"
-            />
-          </div>
+            <div>
+              <label className="block text-gray-700">Password</label>
+              <input 
+                type="password"
+                placeholder="Enter your password"
+                value={password} 
+                onChange={(e) => setPassword(e.target.value)} 
+                required
+                className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300 focus:outline-none"
+              />
+            </div>
 
-          <button 
-            type="submit"
-            disabled={isLoading}
-            className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition duration-200 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
-          >
-            {isLoading ? 'Logging in...' : 'Login'}
-            
-          </button>
-        </form>
+            <button 
+              type="submit"
+              disabled={isLoading}
+              className={`w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition duration-200 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+            >
+              {isLoading ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
+        )}
 
         <p className="mt-4 text-center text-gray-600">
           Don't have an account? 
