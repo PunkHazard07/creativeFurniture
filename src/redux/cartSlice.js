@@ -25,7 +25,7 @@ export const addItemToCart = createAsyncThunk(
         }
 
         try {
-            const response = await fetch('http://localhost:8080/api/cart/add', {
+            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ async () => {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/api/cart/items', { 
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/items`, { 
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -103,7 +103,7 @@ export const increaseItemQuantity = createAsyncThunk(
         }
 
     try {
-        const res = await fetch(`http://localhost:8080/api/cart/increase`, {
+        const res = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/increase`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -145,7 +145,7 @@ export const decreaseItemQuantity = createAsyncThunk(
         }
         
         try {
-            const res = await fetch(`http://localhost:8080/api/cart/decrease`, {
+            const res = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/decrease`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -176,7 +176,7 @@ export const removeItemFromCart = createAsyncThunk(
         }
 
         try {
-            const res = await fetch ('http://localhost:8080/api/cart/remove', {
+            const res = await fetch (`${import.meta.env.VITE_BASE_URL}/cart/remove`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -208,7 +208,7 @@ export const clearCartFromBackend = createAsyncThunk(
             return rejectWithValue('User not authenticated');
         }
         try {
-            const res = await fetch('http://localhost:8080/api/cart/clear', {
+            const res = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/clear`, {
                 method: 'DELETE',
                 headers: {
                     Authorization: `Bearer ${token}`,

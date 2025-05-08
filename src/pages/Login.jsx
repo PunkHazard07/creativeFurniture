@@ -21,7 +21,7 @@ const Login = () => {
     setNeedsVerification(false);
 
     try {
-      const loginResponse = await fetch ('http://localhost:8080/api/login', {
+      const loginResponse = await fetch (`${import.meta.env.VITE_BASE_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

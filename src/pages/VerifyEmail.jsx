@@ -22,7 +22,7 @@ const VerifyEmail = () => {
           return;
         }
 
-        const response = await fetch(`http://localhost:8080/api/verify-email?token=${token}`, {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/verify-email?token=${token}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

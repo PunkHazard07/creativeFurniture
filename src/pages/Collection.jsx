@@ -16,12 +16,12 @@ const CollectionPage = () => {
             setLoading(true);
             setError(null);
 
-            let url= "http://localhost:8080/api/products";
+            let url= `${import.meta.env.VITE_BASE_URL}/products`;
 
             if (category === 'indoor') {
-                url = 'http://localhost:8080/api/products/indoor-category';
+                url = `${import.meta.env.VITE_BASE_URL}/products/indoor-category`;
             } else if (category === 'outdoor') {
-                url = 'http://localhost:8080/api/products/outdoor-category';
+                url = `${import.meta.env.VITE_BASE_URL}/products/outdoor-category`;
             }
 
             try {
