@@ -20,7 +20,7 @@ const NavBar = () => {
             const token = localStorage.getItem('authToken');
             if (!token) return;
 
-            const response = await fetch ('http://localhost:8080/api/logoutUser', {
+            const response = await fetch (`${import.meta.env.VITE_BASE_URL}/logoutUser`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

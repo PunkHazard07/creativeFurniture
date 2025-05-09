@@ -66,7 +66,7 @@ const handlePlaceOrder = async () => {
                 name: item.name,
             }));
 
-            const response = await fetch ("http://localhost:8080/api/place", {
+            const response = await fetch (`${import.meta.env.VITE_BASE_URL}/place`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

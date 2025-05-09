@@ -22,7 +22,7 @@ const OrderConfirmationPage = () => {
         const fetchOrderDetails = async () => {
           try {
             const token = localStorage.getItem("authToken");
-            const response = await fetch(`http://localhost:8080/api/orders/${orderId}`, {
+            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/orders/${orderId}`, {
               method: "GET",
               headers: {
                 "Content-Type": "application/json",

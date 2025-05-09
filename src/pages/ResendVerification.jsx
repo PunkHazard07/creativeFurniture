@@ -13,7 +13,7 @@ const ResendVerification = () => {
     setStatus("sending");
 
     try {
-      const response = await fetch("http://localhost:8080/api/resend-verification", {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/resend-verification`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

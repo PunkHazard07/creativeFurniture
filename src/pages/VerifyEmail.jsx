@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux"; // Import useDispatch from redux
+import { login } from "../redux/authSlice"; // Import your login action
 
 const VerifyEmail = () => {
-  const [status, setStatus] = useState("verifying"); // verifying, success, error
+  const [status, setStatus] = useState("verifying"); // 'verifying', 'success', 'error'
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch(); // Create dispatch function
 
   useEffect(() => {
     const verifyEmailToken = async () => {
       try {
-        // Get token from URL query params
         const searchParams = new URLSearchParams(location.search);
         const token = searchParams.get("token");
 
@@ -20,8 +22,7 @@ const VerifyEmail = () => {
           return;
         }
 
-        // Call API to verify the token
-        const response = await fetch(`http://localhost:8080/api/verify-email?token=${token}`, {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/verify-email?token=${token}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -29,18 +30,25 @@ const VerifyEmail = () => {
         });
 
         const data = await response.json();
+        console.log("Verification response:", data);
 
         if (response.ok) {
           setStatus("success");
           setMessage(data.message || "Email verified successfully!");
-          
-          // If token is returned, store it (automatic sign-in)
+
           if (data.token) {
-            localStorage.setItem("token", data.token);
+            // Dispatch login action and save token in Redux
+            dispatch(login({ token: data.token }));
           }
         } else {
-          setStatus("error");
-          setMessage(data.message || "Failed to verify email.");
+          // Check if it's an already verified case
+          if (data.message && data.message.toLowerCase().includes("already verified")) {
+            setStatus("success");
+            setMessage(data.message);
+          } else {
+            setStatus("error");
+            setMessage(data.message || "Failed to verify email.");
+          }
         }
       } catch (error) {
         console.error("Verification error:", error);
@@ -50,14 +58,13 @@ const VerifyEmail = () => {
     };
 
     verifyEmailToken();
-  }, [location.search]);
+  }, [location.search, dispatch]);
 
   const handleRedirect = () => {
-    // Redirect to appropriate page
     if (status === "success") {
-      navigate("/"); // Redirect to home page after successful verification
+      navigate("/"); // Redirect to homepage or dashboard
     } else {
-      navigate("/login"); // Redirect to login page if verification failed
+      navigate("/login"); // Redirect to login if verification failed
     }
   };
 
@@ -65,7 +72,7 @@ const VerifyEmail = () => {
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
         <h2 className="mb-6 text-center text-2xl font-bold text-gray-800">Email Verification</h2>
-        
+
         {status === "verifying" && (
           <div className="text-center">
             <div className="mb-4 mx-auto h-16 w-16 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
@@ -120,3 +127,4 @@ const VerifyEmail = () => {
 };
 
 export default VerifyEmail;
+

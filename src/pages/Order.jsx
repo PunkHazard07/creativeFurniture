@@ -20,7 +20,7 @@ const Order = () => {
     try {
       setLoading(true);
       // Fetch orders from your API endpoint
-      const response = await fetch('http://localhost:8080/api/userOrders', {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/userOrders`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,

@@ -13,7 +13,7 @@ const Product = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/single/${id}`);
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/single/${id}`);
         const data = await response.json();
 
         if (response.ok) {

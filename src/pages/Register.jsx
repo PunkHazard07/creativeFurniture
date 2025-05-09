@@ -24,7 +24,7 @@ const Register = () => {
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:8080/api/register", {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -59,14 +59,14 @@ const Register = () => {
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label className="mb-2 block text-sm font-medium text-gray-700">
-                  Full Name
+                  Username
                 </label>
                 <input
                   type="text"
                   name="username"
                   value={formData.username}
                   onChange={handleChange}
-                  placeholder="Full Name"
+                  placeholder="Username"
                   className="w-full rounded-md border border-gray-300 p-2 focus:border-blue-500 focus:outline-none"
                   required
                 />
