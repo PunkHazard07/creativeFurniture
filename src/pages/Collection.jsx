@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import ProductItem from "../components/ProductItem";
 
-
-
 const CollectionPage = () => {
+    const [allProducts, setAllProducts] = useState([]);
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -12,24 +11,17 @@ const CollectionPage = () => {
 
     useEffect(() => {
         const fetchProducts = async () => {
-        
             setLoading(true);
             setError(null);
 
-            let url= "http://localhost:8080/api/products";
-
-            if (category === 'indoor') {
-                url = 'http://localhost:8080/api/products/indoor-category';
-            } else if (category === 'outdoor') {
-                url = 'http://localhost:8080/api/products/outdoor-category';
-            }
-
             try {
-                const response = await fetch(url);
+                const response = await fetch("http://localhost:8080/api/products");
                 const data = await response.json();
 
                 if (response.ok) {
-                    setProducts(data.products || data.indoorProducts || data.outdoorProducts);
+                    const fetchedProducts = data.products || [];
+                    setAllProducts(fetchedProducts);
+                    setProducts(fetchedProducts); // default to all
                 } else {
                     setError(data.message || "Failed to fetch products");
                 }
@@ -41,9 +33,21 @@ const CollectionPage = () => {
         };
 
         fetchProducts();
-    }, [category]);
+    }, []);
 
-    //sorting logic
+    // Handle category filtering
+    useEffect(() => {
+        if (category === "all") {
+            setProducts(allProducts);
+        } else {
+            const filtered = allProducts.filter(
+                (product) => product.category?.toLowerCase() === category.toLowerCase()
+            );
+            setProducts(filtered);
+        }
+    }, [category, allProducts]);
+
+    // sorting logic
     const sortedProducts = [...products].sort((a, b) => {
         if (sortBy === "low-to-high") {
             return a.price - b.price;
@@ -52,7 +56,7 @@ const CollectionPage = () => {
         } else {
             return 0;
         }
-    })
+    });
 
     return (
         <div className="flex min-h-screen p-6 bg-gray-100">
@@ -66,14 +70,15 @@ const CollectionPage = () => {
                     className="w-full p-2 border rounded-lg"
                 >
                     <option value="all">All Products</option>
-                    <option value="indoor">Indoor</option>
-                    <option value="outdoor">Outdoor</option>
+                    <option value="Living Room">Living Room</option>
+                    <option value="Bed Frames">Bed Frames</option>
+                    <option value="Dinning Tables">Dinning Tables</option>
+                    <option value="Mirrors">Mirrors</option>
                 </select>
             </aside>
 
             {/* Main Content */}
             <main className="w-3/4 p-6">
-                {/* Header */}
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold">All Collections</h1>
                     <select
@@ -87,19 +92,15 @@ const CollectionPage = () => {
                     </select>
                 </div>
 
-                 {/* Loading State */}
                 {loading && <p className="text-center text-gray-500">Loading products...</p>}
-
-                 {/* Error State */}
                 {error && <p className="text-center text-red-500">{error}</p>}
 
-                {/* Product Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {sortedProducts.map((product) => (
                         <ProductItem
-                            key={product._id} // Ensure correct key
+                            key={product._id}
                             id={product._id}
-                            image={product.images ? [product.images] : []}  // Handle missing images
+                            image={product.images ? [product.images] : []}
                             name={product.name}
                             price={product.price}
                         />

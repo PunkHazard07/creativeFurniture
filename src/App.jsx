@@ -17,6 +17,7 @@ import Checkout from './pages/Checkout';
 import Order from './pages/Order';
 import OrderConfirmationPage from './pages/OderConfirmation';
 import Product from './pages/Product';
+import CategoryProduct from './pages/CategoryProduct';
 import NavBar from './components/NavBar';
 import Footer from './components/Footer';
 
@@ -51,6 +52,7 @@ const App = () => {
         <Route path='/order' element={<Order />} />
         <Route path='/order-success' element={<OrderConfirmationPage />} />
         <Route path='/product/:id' element={<Product />} />
+        <Route path='/category/:category' element={<CategoryProduct />} />
       </Routes>
 
       <Footer />

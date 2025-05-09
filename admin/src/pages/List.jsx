@@ -11,7 +11,7 @@ const List = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/products"); // Adjust endpoint accordingly
+      const response = await fetch("http://localhost:8080/api/products"); 
       const data = await response.json();
       setProducts(data.products);
     } catch (error) {
@@ -134,13 +134,38 @@ return (
             {/* Product Category - Dropdown */}
             <label className="text-sm font-semibold">Category</label>
             <select
-            value={editingProduct.category}
-            onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
-            className="w-full p-2 border rounded mb-2"
+              value={editingProduct.category}
+              onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
+              className="w-full p-2 border rounded mb-2"
             >
-            <option value="Indoor">Indoor</option>
-            <option value="Outdoor">Outdoor</option>
+              <option value="Living Room">Living Room</option>
+              <option value="Bedroom">Bedroom</option>
+              <option value="Dining Room">Dining Room</option>
+              <option value="Mirror">Mirror</option>
             </select>
+
+            {/* Product Description */}
+            <label className="text-sm font-semibold">Description</label>
+            <textarea
+              value={editingProduct.description}
+              onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
+              className="w-full p-2 border rounded mb-2"
+              rows="3"
+            />
+
+            {/* Bestseller Checkbox */}
+            <div className="flex items-center mt-2 mb-4">
+              <input
+                type="checkbox"
+                id="editBestseller"
+                checked={editingProduct.bestseller}
+                onChange={(e) => setEditingProduct({ ...editingProduct, bestseller: e.target.checked })}
+                className="mr-2"
+              />
+              <label htmlFor="editBestseller" className="text-sm font-semibold">
+                Bestseller
+              </label>
+            </div>
 
             {/* Buttons */}
             <div className="flex justify-end gap-2 mt-4">

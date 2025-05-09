@@ -1,4 +1,5 @@
 import React from 'react'
+import CategorySection from '../components/CategorySection'
 import Hero from '../components/Hero'
 import LatestCollection from '../components/LatestCollection'
 import BestSeller from '../components/BestSeller'
@@ -9,6 +10,7 @@ return (
     <div>
         <Hero/>
         <LatestCollection/>
+        <CategorySection/>
         <BestSeller/>
         <OurPolicy/>
         <NewsletterBox/>

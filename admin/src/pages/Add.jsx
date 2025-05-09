@@ -5,7 +5,7 @@ const Add = () => {
   const [file, setFile] = useState(null);
   const [productName, setProductName] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("Indoor");
+  const [category, setCategory] = useState("Living Room");
   const [price, setPrice] = useState("");
   const [isBestSeller, setIsBestSeller] = useState(false);
 
@@ -36,7 +36,20 @@ const Add = () => {
         throw new Error(response.error|| "Something went wrong")
       }
 
-      alert("Product added successfully!");
+      //reset form after successful submission
+      setFile(null);
+      setProductName("");
+      setDescription("");
+      setCategory("Living Room");
+      setPrice("");
+      setIsBestSeller(false);
+
+      //reset file input
+      document .getElementById("fileInput");
+      if (fileInput) {
+        fileInput.value = "";
+      }
+
     } catch (error) {
       console.error("Error:", error.message);
       alert(`Error: ${error.message}`);
@@ -52,9 +65,11 @@ const Add = () => {
         <div>
           <label className="block text-gray-700 font-medium mb-1">Upload Image</label>
           <input
+            id="fileInput"
             type="file"
             onChange={handleFileChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+            required
           />
         </div>
 
@@ -93,8 +108,10 @@ const Add = () => {
               onChange={(e) => setCategory(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
             >
-              <option value="Indoor">Indoor</option>
-              <option value="Outdoor">Outdoor</option>
+              <option value="Living Room">Living Room</option>
+              <option value="Bedroom">Bedroom</option>
+              <option value="Dining Room">Dining Room</option>
+              <option value="Mirror">Mirror</option>
             </select>
           </div>
 
