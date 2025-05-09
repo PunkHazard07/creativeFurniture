@@ -51,6 +51,8 @@ const fetchOrders = async () => {
     }
 };
 
+console.log(orders, 'orders');
+
   // Function to update order status
 const updateStatus = async (orderId, newStatus) => {
     try {
@@ -199,6 +201,8 @@ const updateStatus = async (orderId, newStatus) => {
     }
   };
 
+  console.log(orders, 'orders');
+
   // Handle status change
   const handleStatusChange = (orderId, newStatus) => {
     updateStatus(orderId, newStatus);
@@ -271,6 +275,7 @@ const updateStatus = async (orderId, newStatus) => {
                   <th className="p-4">Address</th>
                   <th className="p-4">Total</th>
                   <th className="p-4">Status</th>
+                  <th className="p-4">Payment Method</th>
                   <th className="p-4">Date</th>
                   <th className="p-4">Actions</th>
                 </tr>
@@ -281,7 +286,7 @@ const updateStatus = async (orderId, newStatus) => {
                     key={order._id} 
                     className={`border-b hover:bg-gray-50 ${order.isArchived ? 'bg-gray-50 opacity-70' : ''}`}
                   >
-                    <td className="p-4">{order.userId}</td>
+                    <td className="p-4">{`${order.firstName}`}</td>
                     <td className="p-4">{order.address}</td>
                     <td className="p-4">₦{order.amount ? order.amount.toFixed(2) : '0.00'}</td>
                     <td className="p-4">
@@ -303,6 +308,7 @@ const updateStatus = async (orderId, newStatus) => {
                         ))}
                       </select>
                     </td>
+                        <td className="p-4">{order.paymentMethod}</td>
                     <td className="p-4">{new Date(order.date).toLocaleDateString()}</td>
                     <td className="p-4">
                       <div className="flex gap-2">

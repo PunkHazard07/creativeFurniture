@@ -84,6 +84,8 @@ const handlePlaceOrder = async () => {
                 }),
             });
 
+            console.log("Response from backend:", response); // Log the response for debugging
+
             const data = await response.json();
             if (response.ok) {
                 // Clear cart in redux and localStorage after successful order

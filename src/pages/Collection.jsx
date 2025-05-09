@@ -15,13 +15,13 @@ const CollectionPage = () => {
             setError(null);
 
             try {
-                const response = await fetch("http://localhost:8080/api/products");
+                const response = await fetch(`${import.meta.env.VITE_BASE_URL}/products`);
                 const data = await response.json();
 
                 if (response.ok) {
                     const fetchedProducts = data.products || [];
                     setAllProducts(fetchedProducts);
-                    setProducts(fetchedProducts); // default to all
+                    setProducts(fetchedProducts);
                 } else {
                     setError(data.message || "Failed to fetch products");
                 }
@@ -71,9 +71,9 @@ const CollectionPage = () => {
                 >
                     <option value="all">All Products</option>
                     <option value="Living Room">Living Room</option>
-                    <option value="Bed Frames">Bed Frames</option>
-                    <option value="Dinning Tables">Dinning Tables</option>
-                    <option value="Mirrors">Mirrors</option>
+                    <option value="Bedroom">Bed Frames</option>
+                    <option value="Dining Room">Dinning Tables</option>
+                    <option value="Mirror">Mirrors</option>
                 </select>
             </aside>
 
