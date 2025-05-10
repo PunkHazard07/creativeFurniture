@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import { LoaderCircle } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
 
 const statusColors = {
-  Pending: 'text-yellow-500',
-  Shipped: 'text-indigo-500',
-  Delivered: 'text-green-600',
-  Cancelled: 'text-red-500'
-}
+  Pending: "text-yellow-500",
+  Shipped: "text-indigo-500",
+  Delivered: "text-green-600",
+  Cancelled: "text-red-500",
+};
 
 const Order = () => {
   const [orders, setOrders] = useState([]);
@@ -13,31 +14,34 @@ const Order = () => {
   const [error, setError] = useState(null);
   const [statusUpdates, setStatusUpdates] = useState({}); // Track status changes
 
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem("authToken");
 
   // Extract the fetchOrders function so we can reuse it
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       // Fetch orders from your API endpoint
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/userOrders`, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${import.meta.env.VITE_BASE_URL}/userOrders`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
-      
+      );
+
       const data = await response.json();
-      
+
       if (!data.success) {
-        throw new Error(data.message || 'Failed to fetch orders');
+        throw new Error(data.message || "Failed to fetch orders");
       }
-      
+
       setOrders(data.orders);
       setError(null);
     } catch (err) {
-      setError(err.message || 'Error fetching orders');
-      console.error('Error fetching orders:', err);
+      setError(err.message || "Error fetching orders");
+      console.error("Error fetching orders:", err);
     } finally {
       setLoading(false);
     }
@@ -46,12 +50,12 @@ const Order = () => {
   useEffect(() => {
     // Initial fetch
     fetchOrders();
-    
+
     // Set up polling every 5 seconds to check for status updates
     const intervalId = setInterval(() => {
       fetchOrders();
     }, 5000); // 30 seconds
-    
+
     // Clean up the interval when component unmounts
     return () => clearInterval(intervalId);
   }, [fetchOrders]);
@@ -59,39 +63,39 @@ const Order = () => {
   useEffect(() => {
     // Store previous order statuses to detect changes
     const orderStatuses = {};
-    orders.forEach(order => {
+    orders.forEach((order) => {
       const prevStatus = statusUpdates[order._id]?.prevStatus;
-      
+
       // If we have a previous status and it's different from current
       if (prevStatus && prevStatus !== order.status) {
         // Set the animation flag
-        setStatusUpdates(prev => ({
+        setStatusUpdates((prev) => ({
           ...prev,
-          [order._id]: { 
-            prevStatus: order.status, 
-            changed: true 
-          }
+          [order._id]: {
+            prevStatus: order.status,
+            changed: true,
+          },
         }));
-        
+
         // Clear the animation after 2 seconds
         setTimeout(() => {
-          setStatusUpdates(prev => ({
+          setStatusUpdates((prev) => ({
             ...prev,
-            [order._id]: { 
-              prevStatus: order.status, 
-              changed: false 
-            }
+            [order._id]: {
+              prevStatus: order.status,
+              changed: false,
+            },
           }));
         }, 2000);
       } else if (!prevStatus) {
         // Initialize for first load
-        orderStatuses[order._id] = { 
-          prevStatus: order.status, 
-          changed: false 
+        orderStatuses[order._id] = {
+          prevStatus: order.status,
+          changed: false,
         };
       }
     });
-    
+
     // Only set on first load to avoid loops
     if (Object.keys(statusUpdates).length === 0 && orders.length > 0) {
       setStatusUpdates(orderStatuses);
@@ -100,8 +104,15 @@ const Order = () => {
 
   if (loading && orders.length === 0) {
     return (
-      <div className="p-4 sm:p-6 flex justify-center items-center h-64">
-        <div className="text-lg text-gray-600">Loading your orders...</div>
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center flex flex-col items-center gap-4">
+          <div className="bg-gray-800 p-4 rounded-full">
+            <LoaderCircle className="animate-spin text-white w-10 h-10" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            Please wait while we fetch your order details.
+          </h1>
+        </div>
       </div>
     );
   }
@@ -130,10 +141,10 @@ const Order = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -141,17 +152,22 @@ const Order = () => {
     <div className="p-4 sm:p-6">
       <h2 className="text-2xl font-semibold mb-6">My Orders</h2>
       <div className="space-y-6">
-        {orders.map(order => (
-          <div key={order._id} className="bg-white shadow-md border rounded-2xl p-4 sm:p-6">
+        {orders.map((order) => (
+          <div
+            key={order._id}
+            className="bg-white shadow-md border rounded-2xl p-4 sm:p-6"
+          >
             <div className="flex justify-between items-center flex-wrap gap-2 mb-4">
               <div>
                 <h3 className="text-lg font-semibold">Order #{order._id}</h3>
-                <p className="text-sm text-gray-500">Placed on {formatDate(order.date)}</p>
+                <p className="text-sm text-gray-500">
+                  Placed on {formatDate(order.date)}
+                </p>
               </div>
-              <div 
-                className={`font-medium ${statusColors[order.status] || 'text-gray-600'} ${
-                  statusUpdates[order._id]?.changed ? 'animate-pulse' : ''
-                }`}
+              <div
+                className={`font-medium ${
+                  statusColors[order.status] || "text-gray-600"
+                } ${statusUpdates[order._id]?.changed ? "animate-pulse" : ""}`}
               >
                 {order.status}
                 {statusUpdates[order._id]?.changed && (
@@ -170,10 +186,12 @@ const Order = () => {
               <ul className="divide-y divide-gray-100">
                 {order.items.map((item, idx) => (
                   <li key={idx} className="flex items-center gap-4 py-3">
-                    {item.productId && item.productId.images && item.productId.images[0] ? (
-                      <img 
-                        src={item.productId.images[0]} 
-                        alt={item.productId.name || 'Product image'} 
+                    {item.productId &&
+                    item.productId.images &&
+                    item.productId.images[0] ? (
+                      <img
+                        src={item.productId.images[0]}
+                        alt={item.productId.name || "Product image"}
                         className="w-16 h-16 object-cover rounded-lg"
                       />
                     ) : (
@@ -183,9 +201,13 @@ const Order = () => {
                     )}
                     <div className="flex-1">
                       <p className="font-medium text-gray-800">
-                        {item.productId && item.productId.name ? item.productId.name : 'Unnamed Product'}
+                        {item.productId && item.productId.name
+                          ? item.productId.name
+                          : "Unnamed Product"}
                       </p>
-                      <p className="text-sm text-gray-500">Quantity: {item.quantity}</p>
+                      <p className="text-sm text-gray-500">
+                        Quantity: {item.quantity}
+                      </p>
                     </div>
                   </li>
                 ))}

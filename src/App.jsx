@@ -20,6 +20,7 @@ import Product from './pages/Product';
 import CategoryProduct from './pages/CategoryProduct';
 import NavBar from './components/NavBar';
 import Footer from './components/Footer';
+import Profile from './pages/Profile';
 
 
 const App = () => {
@@ -53,6 +54,7 @@ const App = () => {
         <Route path='/order-success' element={<OrderConfirmationPage />} />
         <Route path='/product/:id' element={<Product />} />
         <Route path='/category/:category' element={<CategoryProduct />} />
+        <Route path='/profile' element={<Profile />} />
       </Routes>
 
       <Footer />

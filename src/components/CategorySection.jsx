@@ -11,7 +11,7 @@ const CategorySection = () => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://localhost:8080/api/categories");
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/categories`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch categories");
@@ -29,8 +29,6 @@ const CategorySection = () => {
 
     fetchCategories();
   }, []);
-
-  console.log("Fetched categories:", categories);
 
   if (loading) {
     return (
@@ -62,7 +60,6 @@ const CategorySection = () => {
       {/* Categories Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {categories.map((category) => {
-          console.log("Rendering category:", category.name, "with image:", category.image);
           return (
             <CategoryCard
               key={category.name}

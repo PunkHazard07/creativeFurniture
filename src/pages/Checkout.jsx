@@ -4,134 +4,200 @@ import { useNavigate } from "react-router-dom";
 import { clearCartFromBackend } from "../redux/cartSlice";
 
 const Checkout = () => {
-const cartItems = useSelector((state) => state.cart.cartItems || []);
-const navigate = useNavigate();
-const dispatch = useDispatch();
-const [isSubmitting, setIsSubmitting] = useState(false);
-const [error, setError] = useState(null);   
+  const cartItems = useSelector((state) => state.cart.cartItems || []);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
+  const [paymentMethod, setPaymentMethod] = useState("cash");
 
-const [paymentMethod, setPaymentMethod] = useState("cash");
-
-    //Billing form state
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [phone, setPhone] = useState("");
-    const [country, setCountry] = useState("");
-    const [address, setAddress] = useState("");
-    const [email, setEmail] = useState("");
+  //Billing form state
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
+  const [address, setAddress] = useState("");
+  const [email, setEmail] = useState("");
 
   // Calculate total price
-const totalPrice = cartItems.reduce((total, item) => {
+  const totalPrice = cartItems.reduce((total, item) => {
     const price = Number(item.price) || 0;
     return total + price * item.quantity;
-}, 0);
+  }, 0);
 
-//form validation
-const  validateForm = () => {
+  //form validation
+  const validateForm = () => {
     if (!firstName || !lastName || !phone || !country || !address || !email) {
-        setError("Please fill in all required fields");
-        return false;
+      setError("Please fill in all required fields");
+      return false;
     }
-    
-    if (!email.includes('@') || !email.includes('.')) {
-        setError("Please enter a valid email address");
-        return false;
-}
 
-        return true;
-}
+    if (!email.includes("@") || !email.includes(".")) {
+      setError("Please enter a valid email address");
+      return false;
+    }
 
-// Handle form submission
-const handlePlaceOrder = async () => {
-    if(!validateForm()) return; //validate form before proceeding
+    return true;
+  };
+
+  // Handle form submission
+  const handlePlaceOrder = async () => {
+    if (!validateForm()) return; //validate form before proceeding
 
     setIsSubmitting(true); // Set loading state
     setError(null); // Reset error state
     if (paymentMethod === "cash") {
-        try {
-
-            const token = localStorage.getItem("authToken");
-            if (!token) {
-                setError("You must be logged in to place an order.");
-                setIsSubmitting(false); // Reset loading state  
-                return ;
-            }
-
-            //normilize cart items to match backend expectations
-            const orderItems = cartItems.map(item => ({
-                productId: item.id || item.productId, //fallback to productID if id is not available
-                quantity: item.quantity,
-                price: item.price,
-                name: item.name,
-            }));
-
-            const response = await fetch (`${import.meta.env.VITE_BASE_URL}/place`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    firstName,
-                    lastName,
-                    phone,
-                    country,
-                    address,
-                    email,
-                    amount: totalPrice,
-                    items: orderItems,
-                }),
-            });
-
-            console.log("Response from backend:", response); // Log the response for debugging
-
-            const data = await response.json();
-            if (response.ok) {
-                // Clear cart in redux and localStorage after successful order
-                dispatch(clearCartFromBackend()); 
-                // Handle successful order placement
-
-
-                //pass complete order data to the confirmation page
-                const orderData = {
-                    _id: data.order._id || data.order.id,
-                    firstName,
-                    lastName,
-                    phone,
-                    country,
-                    address,
-                    email,
-                    amount: totalPrice,
-                    paymentMethod: paymentMethod,
-                    status: data.order.status || "Processing",
-                    items: orderItems
-                }
-                
-                navigate("/order-success", {
-                    state: {orderData}, // Pass order details to success page
-                }); // Redirect to success page
-            } else {
-                setError(data.message || "Error placing order. Please try again.");
-            }
-        } catch (error) {
-            console.error("Error placing order:", error);
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          setError("You must be logged in to place an order.");
+          setIsSubmitting(false); // Reset loading state
+          return;
         }
+
+        //normilize cart items to match backend expectations
+        const orderItems = cartItems.map((item) => ({
+          productId: item.id || item.productId, //fallback to productID if id is not available
+          quantity: item.quantity,
+          price: item.price,
+          name: item.name,
+        }));
+
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/place`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            phone,
+            country,
+            address,
+            email,
+            amount: totalPrice,
+            items: orderItems,
+          }),
+        });
+
+        console.log("Response from backend:", response); // Log the response for debugging
+
+        const data = await response.json();
+        if (response.ok) {
+          // Clear cart in redux and localStorage after successful order
+          dispatch(clearCartFromBackend());
+          // Handle successful order placement
+
+          //pass complete order data to the confirmation page
+          const orderData = {
+            _id: data.order._id || data.order.id,
+            firstName,
+            lastName,
+            phone,
+            country,
+            address,
+            email,
+            amount: totalPrice,
+            paymentMethod: paymentMethod,
+            status: data.order.status || "Processing",
+            items: orderItems,
+          };
+
+          navigate("/order-success", {
+            state: { orderData }, // Pass order details to success page
+          }); // Redirect to success page
+        } else {
+          setError(data.message || "Error placing order. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error placing order:", error);
+      }
     }
 
     // Handle Paystack payment logic here
-}
+    if (paymentMethod === "paystack") {
+      // Implement Paystack payment logic here
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          setError("You must be logged in to place an order.");
+          setIsSubmitting(false); // Reset loading state
+          return;
+        }
 
-return (
+        //normilize cart items to match backend expectations
+        const orderItems = cartItems.map((item) => ({
+          productId: item.id || item.productId, //fallback to productID if id is not available
+          quantity: item.quantity,
+          price: item.price,
+          name: item.name,
+        }));
+
+        const response = await fetch(
+          `${import.meta.env.VITE_BASE_URL}/paystack/init`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              firstName,
+              lastName,
+              phone,
+              country,
+              address,
+              email,
+              amount: totalPrice,
+              items: orderItems,
+            }),
+          }
+        );
+
+        console.log("paystack Response from backend:", response); // Log the response for debugging
+
+        const data = await response.json();
+        console.log("paystack data", data);
+        if (response.ok) {
+          // Clear cart in redux and localStorage after successful order
+          
+          const orderData = {
+            _id: data.order._id || data.order.id,
+            firstName,
+            lastName,
+            phone,
+            country,
+            address,
+            email,
+            amount: totalPrice,
+            paymentMethod: paymentMethod,
+            status: data.order.status || "Processing",
+            items: orderItems,
+            paystackReference: data.paystackReference,
+          };
+          
+          localStorage.setItem("latestOrderData", JSON.stringify(orderData));
+          
+          window.location.href = data.authorization_url;
+          
+          dispatch(clearCartFromBackend());
+
+        } else {
+          setError(data.message || "Error placing order. Please try again.");
+        }
+      } catch (error) {
+        console.error("Error placing order:", error);
+      }
+    }
+  };
+
+  return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
         <h2 className="text-2xl font-semibold mb-6">Checkout</h2>
-        
-        {error && (
-          <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6">
-            <p>{error}</p>
-          </div>
-        )}
+
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Billing Details */}
@@ -140,73 +206,75 @@ return (
             <form className="space-y-4">
               <div className="flex flex-col">
                 <label className="text-sm font-medium mb-1">First Name *</label>
-                <input 
-                  type="text" 
-                  value={firstName} 
-                  onChange={(e) => setFirstName(e.target.value)} 
-                  placeholder="First Name" 
-                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                  required 
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="First Name"
+                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  required
                 />
               </div>
 
               <div className="flex flex-col">
                 <label className="text-sm font-medium mb-1">Last Name *</label>
-                <input 
-                  type="text" 
-                  value={lastName} 
-                  onChange={(e) => setLastName(e.target.value)} 
-                  placeholder="Last Name" 
-                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                  required 
-                />
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Last Name"
+                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  required
+                  />
               </div>
 
               <div className="flex flex-col">
-                <label className="text-sm font-medium mb-1">Phone Number *</label>
-                <input 
-                  type="tel" 
-                  value={phone} 
-                  onChange={(e) => setPhone(e.target.value)} 
-                  placeholder="Phone Number" 
-                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                  required 
-                />
+                <label className="text-sm font-medium mb-1">
+                  Phone Number *
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Phone Number"
+                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  required
+                  />
               </div>
 
               <div className="flex flex-col">
                 <label className="text-sm font-medium mb-1">Country *</label>
-                <input 
-                  type="text" 
-                  value={country} 
-                  onChange={(e) => setCountry(e.target.value)} 
-                  placeholder="Country" 
-                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                  required 
+                <input
+                  type="text"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  placeholder="Country"
+                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  required
                 />
               </div>
 
               <div className="flex flex-col">
                 <label className="text-sm font-medium mb-1">Address *</label>
-                <input 
-                  type="text" 
-                  value={address} 
-                  onChange={(e) => setAddress(e.target.value)} 
-                  placeholder="Address" 
-                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                  required 
-                />
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Address"
+                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  required
+                  />
               </div>
 
               <div className="flex flex-col">
                 <label className="text-sm font-medium mb-1">Email *</label>
-                <input 
-                  type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                  placeholder="Email Address" 
-                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400" 
-                  required 
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email Address"
+                  className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  required
                 />
               </div>
             </form>
@@ -218,9 +286,16 @@ return (
             <div className="border rounded-lg p-4 space-y-4">
               {cartItems.length > 0 ? (
                 cartItems.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center border-b pb-2">
-                    <div className="text-gray-700">{item.name} × {item.quantity}</div>
-                    <div className="font-medium">₦{(item.price * item.quantity).toLocaleString()}</div>
+                  <div
+                  key={index}
+                    className="flex justify-between items-center border-b pb-2"
+                  >
+                    <div className="text-gray-700">
+                      {item.name} × {item.quantity}
+                    </div>
+                    <div className="font-medium">
+                      ₦{(item.price * item.quantity).toLocaleString()}
+                    </div>
                   </div>
                 ))
               ) : (
@@ -245,8 +320,10 @@ return (
                       checked={paymentMethod === "cash"}
                       onChange={() => setPaymentMethod("cash")}
                       className="mr-2"
-                    />
-                    <label htmlFor="cash" className="text-gray-700">Cash on Delivery</label>
+                      />
+                    <label htmlFor="cash" className="text-gray-700">
+                      Cash on Delivery
+                    </label>
                   </div>
 
                   <div className="flex items-center">
@@ -259,14 +336,22 @@ return (
                       onChange={() => setPaymentMethod("paystack")}
                       className="mr-2"
                     />
-                    <label htmlFor="paystack" className="text-gray-700">Pay with Paystack</label>
+                    <label htmlFor="paystack" className="text-gray-700">
+                      Pay with Paystack
+                    </label>
                   </div>
                 </div>
               </div>
 
+              {error && (
+                <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6">
+                  <p>{error}</p>
+                </div>
+              )}
+              
               <button
                 onClick={handlePlaceOrder}
-                className={`w-full mt-6 py-2 rounded-lg transition ${
+                className={`w-full mt-6 py-2 rounded-lg transition cursor-pointer ${
                   isSubmitting || cartItems.length === 0
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700 text-white"
