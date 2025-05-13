@@ -103,6 +103,8 @@ const CollectionPage = () => {
                             image={product.images ? [product.images] : []}
                             name={product.name}
                             price={product.price}
+                            quantity={product.quantity}
+                            isOutOfStock={product.isOutOfStock}
                         />
                     ))}
                 </div>

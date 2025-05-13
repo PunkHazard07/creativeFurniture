@@ -94,6 +94,8 @@ const CategoryProduct = () => {
                     name={product.name}
                     price={product.price}
                     image={product.images}
+                    quantity={product.quantity}
+                    isOutOfStock={product.isOutOfStock}
                   />
                 ))}
               </div>

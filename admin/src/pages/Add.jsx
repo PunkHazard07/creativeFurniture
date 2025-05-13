@@ -7,10 +7,34 @@ const Add = () => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Living Room");
   const [price, setPrice] = useState("");
-  const [isBestSeller, setIsBestSeller] = useState(false);
+  const [quantity, setQuantity] = useState("1"); // Added quantity state
+  const [isOutOfStock, setIsOutOfStock] = useState(false); // Added isOutOfStock state
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
+  };
+
+  // Handle out of stock checkbox change
+  const handleOutOfStockChange = (e) => {
+    setIsOutOfStock(e.target.checked);
+    // If marking as out of stock, set quantity to 0
+    if (e.target.checked) {
+      setQuantity("0");
+    }
+  };
+
+  // Handle quantity change
+  const handleQuantityChange = (e) => {
+    const newQuantity = e.target.value;
+    setQuantity(newQuantity);
+    
+    // If quantity is set to 0, automatically mark as out of stock
+    if (parseInt(newQuantity) === 0) {
+      setIsOutOfStock(true);
+    } else if (parseInt(newQuantity) > 0 && isOutOfStock) {
+      // If adding quantity and product was marked as out of stock, update status
+      setIsOutOfStock(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -23,8 +47,9 @@ const Add = () => {
       formData.append("name", productName);
       formData.append("description", description);
       formData.append("category", category);
-      formData.append("price", price);
-      formData.append("bestseller", isBestSeller);
+      formData.append("price", price); // Add price to form data
+      formData.append("quantity", quantity); // Add quantity to form data
+      formData.append("isOutOfStock", isOutOfStock); // Add isOutOfStock to form data
 
       
       const response = await fetchWithAuth("/add", {
@@ -42,10 +67,11 @@ const Add = () => {
       setDescription("");
       setCategory("Living Room");
       setPrice("");
-      setIsBestSeller(false);
+      setQuantity("1"); // Reset quantity
+      setIsOutOfStock(false); // Reset isOutOfStock
 
       //reset file input
-      document .getElementById("fileInput");
+      const fileInput = document.getElementById("fileInput");
       if (fileInput) {
         fileInput.value = "";
       }
@@ -128,18 +154,33 @@ const Add = () => {
           </div>
         </div>
 
-        {/* Bestseller Checkbox */}
-        <div className="flex items-center space-x-3">
-          <input
-            type="checkbox"
-            id="bestseller"
-            checked={isBestSeller}
-            onChange={(e) => setIsBestSeller(e.target.checked)}
-            className="w-5 h-5 text-blue-500 border-gray-300 rounded focus:ring-blue-400"
-          />
-          <label htmlFor="bestseller" className="text-gray-700 font-medium cursor-pointer">
-            Mark as Bestseller
-          </label>
+        {/* Quantity & Stock Status */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">Quantity in Stock</label>
+            <input
+              type="number"
+              min="0"
+              value={quantity}
+              onChange={handleQuantityChange}
+              placeholder="Enter available quantity"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+              required
+            />
+          </div>
+
+          <div className="flex items-center justify-start h-full pt-6">
+            <input
+              type="checkbox"
+              id="outOfStock"
+              checked={isOutOfStock}
+              onChange={handleOutOfStockChange}
+              className="w-5 h-5 text-blue-500 border-gray-300 rounded focus:ring-blue-400"
+            />
+            <label htmlFor="outOfStock" className="ml-3 text-gray-700 font-medium cursor-pointer">
+              Mark as Out of Stock
+            </label>
+          </div>
         </div>
 
         {/* Submit Button */}

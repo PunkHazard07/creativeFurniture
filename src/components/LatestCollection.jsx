@@ -72,6 +72,8 @@ const LatestCollection = () => {
               image={product.images ? [product.images] : []} // ensure this is an array
               name={product.name}
               price={product.price}
+              quantity={product.quantity}
+              isOutOfStock={product.isOutOfStock}
             />
           ))}
         </div>

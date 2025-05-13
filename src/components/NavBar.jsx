@@ -74,7 +74,7 @@ const NavBar = () => {
 
             {/* Logo & Business Name */}
             <Link to="/" className="flex items-center space-x-2">
-                <p className="text-xl font-bold">Frontend</p>
+                <p className="text-xl font-bold">Creative Furniture</p>
             </Link>
 
 

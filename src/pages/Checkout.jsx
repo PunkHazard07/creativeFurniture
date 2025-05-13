@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { clearCartFromBackend } from "../redux/cartSlice";
@@ -9,6 +9,7 @@ const Checkout = () => {
   const dispatch = useDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [stockErrors, setStockErrors] = useState([]);
 
   const [paymentMethod, setPaymentMethod] = useState("cash");
 
@@ -26,6 +27,13 @@ const Checkout = () => {
     return total + price * item.quantity;
   }, 0);
 
+   // Reset error states when cart changes
+  useEffect(() => {
+    if (stockErrors.length > 0) {
+      setStockErrors([]);
+    }
+  }, [cartItems]);
+
   //form validation
   const validateForm = () => {
     if (!firstName || !lastName || !phone || !country || !address || !email) {
@@ -41,12 +49,19 @@ const Checkout = () => {
     return true;
   };
 
+    // Check if a product in the cart has stock issues
+    const hasStockIssue = (productId) => {
+      return stockErrors.some(error => error.includes(productId));
+    };
+
   // Handle form submission
   const handlePlaceOrder = async () => {
     if (!validateForm()) return; //validate form before proceeding
 
     setIsSubmitting(true); // Set loading state
     setError(null); // Reset error state
+    setStockErrors([]); // Reset stock errors
+
     if (paymentMethod === "cash") {
       try {
         const token = localStorage.getItem("authToken");
@@ -109,10 +124,20 @@ const Checkout = () => {
             state: { orderData }, // Pass order details to success page
           }); // Redirect to success page
         } else {
-          setError(data.message || "Error placing order. Please try again.");
+          // Handle stock validation errors
+          if (data.errors && Array.isArray(data.errors)) {
+            setStockErrors(data.errors);
+          } else if (data.message && data.message.includes("Stock validation failed") && data.errors) {
+            setStockErrors(data.errors);
+          } else {
+            setError(data.message || "Error placing order. Please try again.");
+          }
         }
       } catch (error) {
         console.error("Error placing order:", error);
+        setError("An unexpected error occurred. Please try again.");
+      } finally {
+        setIsSubmitting(false);
       }
     }
 
@@ -185,10 +210,20 @@ const Checkout = () => {
           dispatch(clearCartFromBackend());
 
         } else {
-          setError(data.message || "Error placing order. Please try again.");
+          // Handle stock validation errors
+          if (data.errors && Array.isArray(data.errors)) {
+            setStockErrors(data.errors);
+          } else if (data.message && data.message.includes("Stock validation failed") && data.errors) {
+            setStockErrors(data.errors);
+          } else {
+            setError(data.message || "Error placing order. Please try again.");
+          }
         }
       } catch (error) {
         console.error("Error placing order:", error);
+        setError("An unexpected error occurred. Please try again.");
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -197,7 +232,21 @@ const Checkout = () => {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
         <h2 className="text-2xl font-semibold mb-6">Checkout</h2>
-
+        
+          {/* Stock Warning Display */}
+          {stockErrors.length > 0 && (
+          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6">
+            <h4 className="font-semibold mb-2">Stock Issues:</h4>
+            <ul className="list-disc pl-5">
+              {stockErrors.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+            <p className="mt-2 text-sm">
+              Please adjust your cart before continuing.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Billing Details */}
@@ -284,20 +333,34 @@ const Checkout = () => {
           <div>
             <h3 className="text-xl font-semibold mb-4">Your Order</h3>
             <div className="border rounded-lg p-4 space-y-4">
-              {cartItems.length > 0 ? (
-                cartItems.map((item, index) => (
-                  <div
-                  key={index}
-                    className="flex justify-between items-center border-b pb-2"
-                  >
-                    <div className="text-gray-700">
-                      {item.name} × {item.quantity}
+            {cartItems.length > 0 ? (
+                cartItems.map((item, index) => {
+                  const itemId = item.id || item.productId;
+                  const hasIssue = stockErrors.some(error => 
+                    error.includes(itemId) || (item.name && error.includes(item.name))
+                  );
+                  
+                  return (
+                    <div
+                      key={index}
+                      className={`flex justify-between items-center border-b pb-2 ${
+                        hasIssue ? "bg-red-50 p-2 rounded border-red-200" : ""
+                      }`}
+                    >
+                      <div className={`${hasIssue ? "text-red-700" : "text-gray-700"}`}>
+                        {item.name} × {item.quantity}
+                        {hasIssue && (
+                          <span className="block text-xs text-red-600 font-medium">
+                            Stock issue
+                          </span>
+                        )}
+                      </div>
+                      <div className="font-medium">
+                        ₦{(item.price * item.quantity).toLocaleString()}
+                      </div>
                     </div>
-                    <div className="font-medium">
-                      ₦{(item.price * item.quantity).toLocaleString()}
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <p className="text-gray-500">Your cart is empty.</p>
               )}
