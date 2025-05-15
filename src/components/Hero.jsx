@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import Image from "../assets/image.jpg";
+import Image from "../assets/Image.jpg";
 
 const Hero = () => {
   useEffect(() => {
