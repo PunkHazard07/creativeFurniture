@@ -31,7 +31,7 @@ const handleLogout = async () => {
 return (
     <nav className="bg-gray-900 text-white flex justify-between items-center p-4 shadow-md">
       {/* Business Logo */}
-    <h1 className="text-2xl font-bold">MyBusiness</h1>
+    <h1 className="text-2xl font-bold">Creative Furniture</h1>
 
       {/* Logout Button */}
     <button

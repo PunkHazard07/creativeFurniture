@@ -9,6 +9,9 @@ import Cart from './pages/Cart';
 import Collection from './pages/Collection';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import VerifyResetToken from './components/VerifyResetToken';
 import Register from './pages/Register';
 import VerifyEmail from './pages/VerifyEmail';
 import VerifiedEmail from './pages/VerifiedEmail';
@@ -45,6 +48,9 @@ const App = () => {
         <Route path='/collection' element={<Collection />} />
         <Route path='/contact' element={<Contact />} />
         <Route path='/login' element={<Login />} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
+        <Route path='/reset-password' element={<ResetPassword />} />
+        <Route path='/verify-reset-token' element={<VerifyResetToken />} />
         <Route path='/register' element={<Register />} />
         <Route path='/verify-email' element={<VerifyEmail />} />
         <Route path='/verified-email' element={<VerifiedEmail />} />

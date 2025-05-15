@@ -159,6 +159,14 @@ const Login = () => {
                 required
                 className="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300 focus:outline-none"
               />
+              <div className="text-right mt-1">
+                <a 
+                  href="/forgot-password" 
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Forgot Password?
+                </a>
+              </div>
             </div>
 
             <button 
