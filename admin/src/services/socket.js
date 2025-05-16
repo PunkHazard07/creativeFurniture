@@ -13,7 +13,6 @@ class SocketService {
 
     const serverUrl = import.meta.env.VITE_BASE_URL;
 
-    // Ensure the URL is properly formatted
     if (!serverUrl) {
       console.error('Server URL is not defined in environment variables');
       return;
@@ -24,12 +23,12 @@ class SocketService {
       this.disconnect();
     }
 
+    // Connect to the root namespace (no custom namespace)
     this.socket = io(serverUrl, {
       withCredentials: true,
       transports: ['websocket', 'polling'],
       reconnectionAttempts: this.maxReconnectAttempts,
-      autoConnect: true,
-      path: '/socket.io' // Ensure this matches your server configuration
+      autoConnect: true
     });
 
     this.socket.on('connect', () => {
@@ -39,13 +38,13 @@ class SocketService {
       // Join dashboard-updates room to receive dashboard events
       if (this.socket.connected) {
         this.socket.emit('join-dashboard');
+        console.log('Joined dashboard-updates room');
       }
     });
 
     this.socket.on('disconnect', (reason) => {
       console.log('Socket disconnected:', reason);
       if (reason === 'io server disconnect') {
-        // The server forcibly disconnected the socket, you might need to reconnect manually
         setTimeout(() => this.connect(), 1000);
       }
     });
@@ -127,6 +126,14 @@ class SocketService {
       this.socket.emit(event, data);
     } else {
       console.error('Socket not connected, cannot emit event');
+      // Attempt to connect and then emit
+      this.connect();
+      // Try emitting after a short delay to allow connection to establish
+      setTimeout(() => {
+        if (this.socket?.connected) {
+          this.socket.emit(event, data);
+        }
+      }, 500);
     }
   }
 }

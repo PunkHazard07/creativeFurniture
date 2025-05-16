@@ -1,106 +1,101 @@
 import React, { useState, useEffect } from "react";
 
 const Orders = () => {
-const [orders, setOrders] = useState([]);
-const [loading, setLoading] = useState(true);
-const [error, setError] = useState(null);
-const [updateMessage, setUpdateMessage] = useState(null);
-const [filterStatus, setFilterStatus] = useState("All"); // State for filter status
-const [showArchived, setShowArchived] = useState(false); // State for archived orders
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [updateMessage, setUpdateMessage] = useState(null);
+  const [filterStatus, setFilterStatus] = useState("All"); // State for filter status
+  const [showArchived, setShowArchived] = useState(false); // State for archived orders
 
-const statusOptions = ["Pending", "Shipped", "Delivered", "Cancelled"];
+  const statusOptions = ["Pending", "Shipped", "Delivered", "Cancelled"];
     
-    const token = localStorage.getItem('token'); // get token from localStorage
+  const token = localStorage.getItem('token'); // get token from localStorage
 
   // Fetch all orders on component mount
-useEffect(() => {
+  useEffect(() => {
     fetchOrders();
-}, [showArchived]); // Re-fetch orders when showArchived changes
+  }, [showArchived]); // Re-fetch orders when showArchived changes
 
   // Function to fetch all orders
-const fetchOrders = async () => {
+  const fetchOrders = async () => {
     try {
-    setLoading(true);
-    const response = await fetch('http://localhost:8080/api/listOrders', {
+      setLoading(true);
+      const response = await fetch('http://localhost:8080/api/listOrders', {
         method: 'POST',
         headers: {
-        'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}` // Include token in the request header
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` // Include token in the request header
         }
-    });
+      });
 
-    if (!response.ok) {
+      if (!response.ok) {
         throw new Error('Failed to fetch orders');
-    }
+      }
 
-    const data = await response.json();
-    if (data.success) {
-          // Filter out archived orders if showArchived is false
-          const filteredOrders = showArchived 
+      const data = await response.json();
+      if (data.success) {
+        // Filter out archived orders if showArchived is false
+        const filteredOrders = showArchived 
           ? data.order 
           : data.order.filter(order => !order.isArchived);
         setOrders(filteredOrders);
-    } else {
+      } else {
         throw new Error(data.message || 'Error fetching orders');
-    }
+      }
     } catch (err) {
-    setError(err.message);
-    console.error('Error fetching orders:', err);
+      setError(err.message);
+      console.error('Error fetching orders:', err);
     } finally {
-    setLoading(false);
+      setLoading(false);
     }
-};
-
-console.log(orders, 'orders');
+  };
 
   // Function to update order status
-const updateStatus = async (orderId, newStatus) => {
+  const updateStatus = async (orderId, newStatus) => {
     try {
+      setUpdateMessage({type: 'loading', text: 'Updating status...'});
 
-      setUpdateMessage({type: 'loading', message: 'Updating status...'});
-
-    const response = await fetch('http://localhost:8080/api/status', {
+      const response = await fetch('http://localhost:8080/api/status', {
         method: 'POST',
         headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}` // Include token in the request header
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` // Include token in the request header
         },
         body: JSON.stringify({
-        orderId,
-        status: newStatus
+          orderId,
+          status: newStatus
         })
-    });
+      });
 
-    if (!response.ok) {
+      if (!response.ok) {
         throw new Error('Failed to update status');
-    }
+      }
 
-    const data = await response.json();
-    if (data.success) {
+      const data = await response.json();
+      if (data.success) {
         // Update the local state to reflect the change
         setOrders(orders.map(order => 
-        order._id === orderId ? { ...order, status: newStatus } : order
+          order._id === orderId ? { ...order, status: newStatus } : order
         ));
 
-        setUpdateMessage({type: 'success', message: 'Status updated successfully!'});
+        setUpdateMessage({type: 'success', text: 'Status updated successfully!'});
         
         // clear success message after 3 seconds
         setTimeout(() => {
-            setUpdateMessage(null);
+          setUpdateMessage(null);
         }, 3000);
-
-    } else {
+      } else {
         throw new Error(data.message || 'Error updating status');
-    }
+      }
     } catch (err) {
-    console.error('Error updating order status:', err);
-    setUpdateMessage({type: 'error', text:`Error: ${err.message}` });
-    
-    // clear error message after 5 seconds
-    setTimeout(() => {
+      console.error('Error updating order status:', err);
+      setUpdateMessage({type: 'error', text: `Error: ${err.message}`});
+      
+      // clear error message after 5 seconds
+      setTimeout(() => {
         setUpdateMessage(null);
-    }, 5000);
-
+      }, 5000);
     }
   };
 
@@ -201,8 +196,6 @@ const updateStatus = async (orderId, newStatus) => {
     }
   };
 
-  console.log(orders, 'orders');
-
   // Handle status change
   const handleStatusChange = (orderId, newStatus) => {
     updateStatus(orderId, newStatus);
@@ -210,13 +203,24 @@ const updateStatus = async (orderId, newStatus) => {
 
   // filter orders by status
   const filteredOrders = filterStatus === "All" 
-  ? orders 
-  : orders.filter(order => order.status === filterStatus);
+    ? orders 
+    : orders.filter(order => order.status === filterStatus);
+
+  // Helper function to get user display name
+  const getUserDisplayName = (order) => {
+    if (order.userId && typeof order.userId === 'object') {
+      // If userId is populated as an object with user details
+      return order.userId.username || 'Anonymous User';
+    } else {
+      // Fallback if userId is not populated or is just the ID string
+      return 'User #' + (order.userId?.substring(0, 6) || 'Unknown');
+    }
+  };
 
   if (loading) return <div className="p-4 text-center">Loading orders...</div>;
   if (error) return <div className="p-4 text-center text-red-500">Error: {error}</div>;
 
-  return  (
+  return (
     <div className="p-4 sm:p-6">
       <h2 className="text-2xl font-semibold mb-4">All Orders</h2>
 
@@ -286,7 +290,7 @@ const updateStatus = async (orderId, newStatus) => {
                     key={order._id} 
                     className={`border-b hover:bg-gray-50 ${order.isArchived ? 'bg-gray-50 opacity-70' : ''}`}
                   >
-                    <td className="p-4">{`${order.firstName}`}</td>
+                    <td className="p-4">{getUserDisplayName(order)}</td>
                     <td className="p-4">{order.address}</td>
                     <td className="p-4">₦{order.amount ? order.amount.toFixed(2) : '0.00'}</td>
                     <td className="p-4">
@@ -308,7 +312,7 @@ const updateStatus = async (orderId, newStatus) => {
                         ))}
                       </select>
                     </td>
-                        <td className="p-4">{order.paymentMethod}</td>
+                    <td className="p-4">{order.paymentMethod}</td>
                     <td className="p-4">{new Date(order.date).toLocaleDateString()}</td>
                     <td className="p-4">
                       <div className="flex gap-2">
@@ -344,7 +348,7 @@ const updateStatus = async (orderId, newStatus) => {
                 className={`bg-white shadow-md rounded-xl p-4 space-y-2 border ${order.isArchived ? 'opacity-70' : ''}`}
               >
                 <div>
-                  <strong>User:</strong> {order.userId}
+                  <strong>User:</strong> {getUserDisplayName(order)}
                 </div>
                 <div>
                   <strong>Address:</strong> {order.address}
@@ -371,6 +375,9 @@ const updateStatus = async (orderId, newStatus) => {
                       </option>
                     ))}
                   </select>
+                </div>
+                <div>
+                  <strong>Payment Method:</strong> {order.paymentMethod}
                 </div>
                 <div>
                   <strong>Date:</strong> {new Date(order.date).toLocaleDateString()}
