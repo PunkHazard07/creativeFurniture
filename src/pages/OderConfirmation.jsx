@@ -7,27 +7,38 @@ const OrderConfirmationPage = () => {
   const location = useLocation();
   const [orderDetails, setOrderDetails] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const localOrder = localStorage.getItem("latestOrderData");
-    const stateOrder =
-      location.state?.orderData || (localOrder ? JSON.parse(localOrder) : null);
-    const reference = stateOrder?.paystackReference;
-    const orderId = stateOrder?._id;
-
-    console.log("Order data found in location state:", localOrder);
-    console.log("Order data found in state:", stateOrder);
-    console.log("Order reference:", reference);
-    console.log("Order ID:", orderId);
-
-    if (reference && orderId) {
-      const verifyTransaction = async () => {
-        try {
+    const fetchOrderData = async () => {
+      try {
+        // Try to get order from URL params (for Paystack redirect)
+        const urlParams = new URLSearchParams(window.location.search);
+        const reference = urlParams.get('reference');
+        
+        // Get locally stored order data
+        const localOrderStr = localStorage.getItem("latestOrderData");
+        const localOrder = localOrderStr ? JSON.parse(localOrderStr) : null;
+        
+        // Get order from location state (for direct navigation)
+        const stateOrder = location.state?.orderData;
+        
+        console.log("URL Reference:", reference);
+        console.log("Local order data:", localOrder);
+        console.log("State order data:", stateOrder);
+        
+        // First priority: verify Paystack transaction if reference exists
+        if (reference && localOrder?.paystackReference === reference) {
+          const orderId = localOrder._id;
+          console.log("Verifying Paystack transaction for order:", orderId);
+          
           const token = localStorage.getItem("authToken");
+          if (!token) {
+            throw new Error("Authentication token not found");
+          }
+          
           const verifyResponse = await fetch(
-            `${
-              import.meta.env.VITE_BASE_URL
-            }/paystack/verify/${reference}/${orderId}`,
+            `${import.meta.env.VITE_BASE_URL}/paystack/verify/${reference}/${orderId}`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -38,32 +49,45 @@ const OrderConfirmationPage = () => {
 
           const result = await verifyResponse.json();
           console.log("Verification result:", result);
+          
           if (verifyResponse.ok && result.success) {
             setOrderDetails(result.order);
           } else {
-            console.error("Verification failed:", result.message);
+            throw new Error(result.message || "Transaction verification failed");
           }
-        } catch (error) {
-          console.error("Verification error:", error);
-        } finally {
-          setLoading(false);
+        } 
+        // Second priority: use state order data
+        else if (stateOrder) {
+          console.log("Using order data from state:", stateOrder);
+          setOrderDetails(stateOrder);
         }
-      };
-      verifyTransaction();
-    } else {
-      // Fallback: use the passed order data directly
-      if (stateOrder) {
-        setOrderDetails(stateOrder);
+        // Third priority: use local storage order data
+        else if (localOrder) {
+          console.log("Using order data from local storage:", localOrder);
+          setOrderDetails(localOrder);
+        } 
+        // No order data found
+        else {
+          throw new Error("Order data not found");
+        }
+      } catch (error) {
+        console.error("Error fetching order details:", error);
+        setError(error.message || "Failed to load order details");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }
+    };
+
+    fetchOrderData();
   }, [location]);
 
-  console.log("Order first details:", orderDetails); // Debugging line
+  // Clear order data from localStorage after successful load
   useEffect(() => {
-    console.log("Current order details state:", orderDetails);
-  }, [orderDetails]);
-  console.log("Order secodn details:", orderDetails); // Debugging line
+    if (orderDetails && !loading) {
+      // Clear stored order data to prevent reuse
+      localStorage.removeItem("latestOrderData");
+    }
+  }, [orderDetails, loading]);
 
   if (loading) {
     return (
@@ -73,15 +97,14 @@ const OrderConfirmationPage = () => {
             <LoaderCircle className="animate-spin text-white w-10 h-10" />
           </div>
           <h1 className="text-2xl font-bold text-gray-800">
-            Please wait while we fetch your order details.
+            Please wait while we fetch your order details...
           </h1>
-
         </div>
       </div>
     );
   }
 
-  if (!orderDetails) {
+  if (error || !orderDetails) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
         <div className="bg-white shadow-xl rounded-2xl max-w-2xl w-full p-8 text-center">
@@ -89,15 +112,22 @@ const OrderConfirmationPage = () => {
             Order Not Found
           </h1>
           <p className="text-gray-700 mb-6">
-            We couldn't find your order details. Please check your orders in
-            your account.
+            {error || "We couldn't find your order details. Please check your orders in your account."}
           </p>
-          <button
-            onClick={() => navigate("/")}
-            className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition duration-300"
-          >
-            Return to Home
-          </button>
+          <div className="space-y-4">
+            <button
+              onClick={() => navigate("/")}
+              className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white transition duration-300 w-full"
+            >
+              Return to Home
+            </button>
+            <button
+              onClick={() => navigate("/order")}
+              className="px-6 py-3 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 transition duration-300 w-full"
+            >
+              View My Orders
+            </button>
+          </div>
         </div>
       </div>
     );

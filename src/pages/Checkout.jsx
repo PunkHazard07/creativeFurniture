@@ -49,10 +49,10 @@ const Checkout = () => {
     return true;
   };
 
-    // Check if a product in the cart has stock issues
-    const hasStockIssue = (productId) => {
-      return stockErrors.some(error => error.includes(productId));
-    };
+  // Check if a product in the cart has stock issues
+  const hasStockIssue = (productId) => {
+    return stockErrors.some(error => error.includes(productId));
+  };
 
   // Handle form submission
   const handlePlaceOrder = async () => {
@@ -71,7 +71,7 @@ const Checkout = () => {
           return;
         }
 
-        //normilize cart items to match backend expectations
+        //normalize cart items to match backend expectations
         const orderItems = cartItems.map((item) => ({
           productId: item.id || item.productId, //fallback to productID if id is not available
           quantity: item.quantity,
@@ -143,7 +143,6 @@ const Checkout = () => {
 
     // Handle Paystack payment logic here
     if (paymentMethod === "paystack") {
-      // Implement Paystack payment logic here
       try {
         const token = localStorage.getItem("authToken");
         if (!token) {
@@ -152,7 +151,7 @@ const Checkout = () => {
           return;
         }
 
-        //normilize cart items to match backend expectations
+        //normalize cart items to match backend expectations
         const orderItems = cartItems.map((item) => ({
           productId: item.id || item.productId, //fallback to productID if id is not available
           quantity: item.quantity,
@@ -181,13 +180,12 @@ const Checkout = () => {
           }
         );
 
-        console.log("paystack Response from backend:", response); // Log the response for debugging
+        console.log("Paystack Response from backend:", response); // Log the response for debugging
 
         const data = await response.json();
-        console.log("paystack data", data);
+        console.log("Paystack data", data);
         if (response.ok) {
-          // Clear cart in redux and localStorage after successful order
-          
+          // Store order data in localStorage for retrieval after redirect
           const orderData = {
             _id: data.order._id || data.order.id,
             firstName,
@@ -205,10 +203,11 @@ const Checkout = () => {
           
           localStorage.setItem("latestOrderData", JSON.stringify(orderData));
           
-          window.location.href = data.authorization_url;
-          
+          // Clear cart before redirecting to Paystack
           dispatch(clearCartFromBackend());
-
+          
+          // Redirect to Paystack payment page
+          window.location.href = data.authorization_url;
         } else {
           // Handle stock validation errors
           if (data.errors && Array.isArray(data.errors)) {
