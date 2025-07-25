@@ -15,7 +15,7 @@ const handleRegister = async (e) => {
     
 
     try {
-        const response = await fetch('http://localhost:8080/api/register-admin', {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/register-admin`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

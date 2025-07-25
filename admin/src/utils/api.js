@@ -14,7 +14,7 @@ const refreshAccessToken = async () => {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/api/refresh-token', {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/refresh-token`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ const fetchWithAuth = async(url, options = {}) => {
 
     options.headers['Authorization'] =`Bearer ${accessToken}`;
 
-    let response =  await fetch(`http://localhost:8080/api${url}`, options);
+    let response =  await fetch(`${import.meta.env.VITE_BASE_URL}/api${url}`, options);
 
     if(response.status === 401){
         //token expired, try to refresh it
@@ -57,7 +57,7 @@ const fetchWithAuth = async(url, options = {}) => {
         if(newAccessToken){
             //update the header with the new access token
             options.headers['Authorization'] = `Bearer ${newAccessToken}`;
-            response = await fetch(`http://localhost:8080/api${url}`, options);
+            response = await fetch(`${import.meta.env.VITE_BASE_URL}/api${url}`, options);
         } else{
             //logout userif refresh fails
             localStorage.removeItem('token');

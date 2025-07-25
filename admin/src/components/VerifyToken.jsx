@@ -29,7 +29,7 @@ const VerifyToken = () => {
       }
 
       try {
-        const response = await fetch("http://localhost:8080/api/verify-token", {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/verify-token`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

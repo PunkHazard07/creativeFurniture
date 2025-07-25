@@ -2,8 +2,8 @@ import { useState } from "react";
 import { fetchWithAuth } from "../utils/api";
 
 const Add = () => {
-  const [file, setFile] = useState(null);
-  const [productName, setProductName] = useState("");
+  const [file, setFile] = useState(null); 
+  const [productName, setProductName] = useState(""); 
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Living Room");
   const [price, setPrice] = useState("");

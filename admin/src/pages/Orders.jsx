@@ -21,7 +21,7 @@ const Orders = () => {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8080/api/listOrders', {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/listOrders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ const Orders = () => {
     try {
       setUpdateMessage({type: 'loading', text: 'Updating status...'});
 
-      const response = await fetch('http://localhost:8080/api/status', {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/status`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -109,7 +109,7 @@ const Orders = () => {
     try {
       setUpdateMessage({type: 'loading', text: 'Deleting order...'});
 
-      const response = await fetch('http://localhost:8080/api/deleteOrder', {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/deleteOrder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ const Orders = () => {
     try {
       setUpdateMessage({type: 'loading', text: 'Archiving order...'});
 
-      const response = await fetch('http://localhost:8080/api/archiveOrder', {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/archiveOrder`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

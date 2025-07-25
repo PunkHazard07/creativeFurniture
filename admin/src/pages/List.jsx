@@ -11,7 +11,7 @@ const List = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/products"); 
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/products`);
       const data = await response.json();
       setProducts(data.products);
     } catch (error) {
@@ -24,7 +24,7 @@ const List = () => {
       const token = localStorage.getItem('token'); // Get token from local storage
 
       const response = await fetch(
-        `http://localhost:8080/api/remove/${id}`,
+        `${import.meta.env.VITE_BASE_URL}/remove/${id}`,
         {
           method: "DELETE",
           headers: {
@@ -48,7 +48,7 @@ const List = () => {
     try {
       const token = localStorage.getItem('token'); // Get token from local storage
 
-      const response = await fetch(`http://localhost:8080/api/update/${updatedProduct._id}`, {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/update/${updatedProduct._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
