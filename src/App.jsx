@@ -1,6 +1,5 @@
-import React from 'react'
+import { useEffect }  from 'react'
 import { Route, Routes } from 'react-router-dom';
-import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchCart } from './redux/cartSlice';
 import Home from './pages/Home';
