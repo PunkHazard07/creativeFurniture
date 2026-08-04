@@ -1,9 +1,8 @@
 import React, { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const VerifiedEmail = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     // If user navigates directly to this page without being redirected,
