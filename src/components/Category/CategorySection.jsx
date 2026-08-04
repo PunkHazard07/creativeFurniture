@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import CategoryCard from "./CategoryCard";
-import Title from "./Title";
+import Title from "../Title";
+import Spinner from "../Spinner";
 
 const CategorySection = () => {
   const [categories, setCategories] = useState([]);
@@ -32,8 +33,8 @@ const CategorySection = () => {
 
   if (loading) {
     return (
-      <div className="py-16 text-center">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
+      <div className="py-16 text-center flex flex-col items-center justify-center">
+        <Spinner size="md" color="indigo" />
         <p className="mt-2 text-gray-600">Loading categories...</p>
       </div>
     );

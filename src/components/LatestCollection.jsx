@@ -2,6 +2,8 @@ import {useEffect, useState} from "react";
 import Title from "./Title";
 import ProductItem from "./ProductItem";
 import { Link } from "react-router-dom";
+import Spinner from "./Spinner";
+import ErrorAlert from "./ErrorAlert";
 
 const LatestCollection = () => {
   const [products, setProducts] = useState([]);
@@ -23,7 +25,7 @@ const LatestCollection = () => {
         setError(error.message || 'Something went wrong!');
       } finally {
         setLoading(false);
-      };
+      }
     };
 
     fetchLatestProduct(); 
@@ -46,19 +48,13 @@ const LatestCollection = () => {
       {/* Loading & Error Handling */}
       {loading && (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-indigo-500"></div>
+          <Spinner size="lg" color="indigo" />
         </div>
       )}
       
       {error && (
-        <div className="text-center text-red-500 py-8">
-          <p className="font-medium">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-3 text-indigo-600 hover:text-indigo-800 underline"
-          >
-            Try Again
-          </button>
+        <div className="max-w-md mx-auto py-8">
+          <ErrorAlert message={error} onClose={() => setError(null)} />
         </div>
       )}
 

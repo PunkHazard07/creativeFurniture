@@ -18,7 +18,7 @@ import VerifiedEmail from './pages/VerifiedEmail';
 import ResendVerification from './pages/ResendVerification';
 import Checkout from './pages/Checkout';
 import Order from './pages/Order';
-import OrderConfirmationPage from './pages/OderConfirmation';
+import OrderConfirmationPage from './pages/OrderConfirmation';
 import Product from './pages/Product';
 import CategoryProduct from './pages/CategoryProduct';
 import NavBar from './components/NavBar';
