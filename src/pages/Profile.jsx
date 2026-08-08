@@ -14,17 +14,13 @@ const Profile = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem("authToken");
-      if (!token) throw new Error("No authentication token found. Please log in.");
-
       const headers = {
-        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       };
 
       const [userRes, ordersRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_BASE_URL}/user/profile`, { headers }),
-        fetch(`${import.meta.env.VITE_BASE_URL}/userOrders`, { headers }),
+        fetch(`${import.meta.env.VITE_BASE_URL}/user/profile`, { headers, credentials: 'include' }),
+        fetch(`${import.meta.env.VITE_BASE_URL}/user-orders`, { headers, credentials: 'include' }),
       ]);
 
       if (!userRes.ok) throw new Error("Failed to fetch user profile.");

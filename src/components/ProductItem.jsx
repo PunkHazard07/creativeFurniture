@@ -1,10 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart, addItemToCart } from "../redux/cartSlice";
 
 const ProductItem = ({ id, image, name, price, quantity = 0, isOutOfStock = false }) => {
   const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   const handleAddToCart = (e) => {
     e.preventDefault(); // Prevent navigation to product detail page
@@ -15,8 +16,6 @@ const ProductItem = ({ id, image, name, price, quantity = 0, isOutOfStock = fals
       return;
     }
 
-    const token = localStorage.getItem('authToken'); // Check if user is logged in
-
     const cartItem = {
       id: id,  // for redux/UI
       name: name,
@@ -26,7 +25,7 @@ const ProductItem = ({ id, image, name, price, quantity = 0, isOutOfStock = fals
       quantity: 1,
     };
 
-    if (token && token !== 'undefined' && token !== 'null') {
+    if (isAuthenticated) {
       dispatch(addItemToCart({productID: id, quantity: 1})).unwrap()
         .then(() => {
           // Show a small toast notification or feedback

@@ -7,8 +7,7 @@ import {
   decreaseQuantity, 
   removeFromCart, 
   clearCart, 
-  increaseItemQuantity, 
-  decreaseItemQuantity, 
+  updateItemQuantity, 
   removeItemFromCart, 
   clearCartFromBackend 
 } from "../redux/cartSlice";
@@ -18,7 +17,7 @@ const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const isAuthenticated = !!localStorage.getItem('authToken');
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   // Calculate total price
   const totalPrice = cartItems.reduce((total, item) => {
@@ -92,7 +91,7 @@ const Cart = () => {
                     <button
                       onClick={() => {
                         if (isAuthenticated) {
-                          dispatch(decreaseItemQuantity(item.productID || item.id));
+                          dispatch(updateItemQuantity({ productID: item.productID || item.id, delta: -1 }));
                         } else {
                           dispatch(decreaseQuantity(item.id));
                         }
@@ -108,7 +107,7 @@ const Cart = () => {
                     <button 
                       onClick={() => {
                         if (isAuthenticated) {
-                          dispatch(increaseItemQuantity(item.productID || item.id));
+                          dispatch(updateItemQuantity({ productID: item.productID || item.id, delta: 1 }));
                         } else {
                           dispatch(increaseQuantity(item.id));
                         }
@@ -123,7 +122,7 @@ const Cart = () => {
                   <button 
                     onClick={() => {
                       if (isAuthenticated) {
-                        dispatch(removeItemFromCart(item.productID));
+                        dispatch(removeItemFromCart(item.productID || item.id));
                       } else {
                         dispatch(removeFromCart(item.id));
                       }

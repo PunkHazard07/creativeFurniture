@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart, addItemToCart } from "../redux/cartSlice";
 
 const Product = () => {
@@ -10,6 +10,7 @@ const Product = () => {
   const [error, setError] = useState(null);
   const [addedToCart, setAddedToCart] = useState(false);
   const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -36,7 +37,6 @@ const Product = () => {
   const handleAddToCart = async () => {
     if (!product || isProductUnavailable) return; // Return if product is not available or out of stock
 
-    const token = localStorage.getItem('authToken'); // check if user is logged in
     const cartItem = {
       id: product._id,  // for redux/UI
       name: product.name,
@@ -47,7 +47,7 @@ const Product = () => {
     };
 
     try {
-      if (token && token !== 'undefined' && token !== 'null') {
+      if (isAuthenticated) {
         await dispatch(addItemToCart({productID: product._id, quantity: 1})).unwrap();
         console.log('Dispatched addItemToCart to backend');
       } else {

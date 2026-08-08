@@ -1,71 +1,58 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useDispatch } from "react-redux"; // Import useDispatch from redux
-import { login } from "../redux/authSlice"; // Import your login action
+import { useState } from "react";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { checkAuthStatus } from "../redux/authSlice";
+
 
 const VerifyEmail = () => {
-  const [status, setStatus] = useState("verifying"); // 'verifying', 'success', 'error'
-  const [message, setMessage] = useState("");
-  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const location = useLocation();
-  const dispatch = useDispatch(); // Create dispatch function
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    const verifyEmailToken = async () => {
-      try {
-        const searchParams = new URLSearchParams(location.search);
-        const token = searchParams.get("token");
+  const prefillEmail = location.state?.email || searchParams.get("email") || "";
 
-        if (!token) {
-          setStatus("error");
-          setMessage("No verification token found in URL.");
-          return;
-        }
+  const [email, setEmail] = useState(prefillEmail);
+  const [code, setCode] = useState("");
+  const [status, setStatus] = useState("idle"); // 'idle', 'verifying', 'success', 'error'
+  const [message, setMessage] = useState("");
 
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/verify-email?token=${token}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("verifying");
+    setMessage("");
 
-        const data = await response.json();
-        console.log("Verification response:", data);
+    try {
+      const params = new URLSearchParams({ email: email.trim(), code: code.trim() });
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/verify-email?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", 
+      });
 
-        if (response.ok) {
-          setStatus("success");
-          setMessage(data.message || "Email verified successfully!");
+      const data = await response.json();
 
-          if (data.token) {
-            // Dispatch login action and save token in Redux
-            dispatch(login({ token: data.token }));
-          }
-        } else {
-          // Check if it's an already verified case
-          if (data.message && data.message.toLowerCase().includes("already verified")) {
-            setStatus("success");
-            setMessage(data.message);
-          } else {
-            setStatus("error");
-            setMessage(data.message || "Failed to verify email.");
-          }
-        }
-      } catch (error) {
-        console.error("Verification error:", error);
+      const isAlreadyVerified = data.message && data.message.toLowerCase().includes("already verified");
+
+      if (response.ok || isAlreadyVerified) {
+        dispatch(checkAuthStatus());
+        navigate("/verified-email");
+        return;
+      } else {
         setStatus("error");
-        setMessage("An error occurred while verifying your email.");
+        setMessage(data.message || "Failed to verify email.");
       }
-    };
-
-    verifyEmailToken();
-  }, [location.search, dispatch]);
+    } catch (error) {
+      console.error("Verification error:", error);
+      setStatus("error");
+      setMessage("An error occurred while verifying your email.");
+    }
+  };
 
   const handleRedirect = () => {
-    if (status === "success") {
-      navigate("/"); // Redirect to homepage or dashboard
-    } else {
-      navigate("/login"); // Redirect to login if verification failed
-    }
+    navigate("/");
   };
 
   return (
@@ -73,14 +60,7 @@ const VerifyEmail = () => {
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
         <h2 className="mb-6 text-center text-2xl font-bold text-gray-800">Email Verification</h2>
 
-        {status === "verifying" && (
-          <div className="text-center">
-            <div className="mb-4 mx-auto h-16 w-16 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
-            <p className="text-gray-600">Verifying your email address...</p>
-          </div>
-        )}
-
-        {status === "success" && (
+        {status === "success" ? (
           <div className="text-center">
             <div className="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -95,31 +75,71 @@ const VerifyEmail = () => {
               Continue to Website
             </button>
           </div>
-        )}
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <p className="text-sm text-gray-600 text-center">
+              Enter the verification code we emailed you.
+            </p>
 
-        {status === "error" && (
-          <div className="text-center">
-            <div className="mb-4 mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+            {status === "error" && (
+              <p className="text-red-500 text-center text-sm">{message}</p>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email address"
+                className="w-full rounded-md border border-gray-300 p-2 focus:border-blue-500 focus:outline-none"
+                required
+              />
             </div>
-            <p className="mb-4 text-red-600">{message}</p>
-            <div className="flex flex-col gap-3">
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Verification Code
+              </label>
+              <input
+                type="text"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="Enter the code from your email"
+                className="w-full rounded-md border border-gray-300 p-2 focus:border-blue-500 focus:outline-none tracking-widest"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={status === "verifying"}
+              className={`w-full rounded-md bg-blue-600 py-2 px-4 text-white hover:bg-blue-700 transition-colors ${
+                status === "verifying" ? "opacity-70 cursor-not-allowed" : ""
+              }`}
+            >
+              {status === "verifying" ? "Verifying..." : "Verify Email"}
+            </button>
+
+            <div className="flex flex-col gap-3 pt-2">
               <button
+                type="button"
                 onClick={() => navigate("/resend-verification")}
-                className="w-full rounded-md bg-blue-600 py-2 px-4 text-white hover:bg-blue-700 transition-colors"
+                className="text-blue-600 hover:underline text-sm"
               >
-                Resend Verification Email
+                Didn't get a code? Resend verification email
               </button>
               <button
+                type="button"
                 onClick={() => navigate("/login")}
-                className="w-full rounded-md bg-gray-300 py-2 px-4 text-gray-700 hover:bg-gray-400 transition-colors"
+                className="text-gray-500 hover:underline text-sm"
               >
                 Back to Login
               </button>
             </div>
-          </div>
+          </form>
         )}
       </div>
     </div>

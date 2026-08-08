@@ -1,7 +1,8 @@
 import { useEffect }  from 'react'
 import { Route, Routes } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { fetchCart } from './redux/cartSlice';
+import { checkAuthStatus } from './redux/authSlice';
 import Home from './pages/Home';
 import About from './pages/About';
 import Cart from './pages/Cart';
@@ -27,15 +28,18 @@ import Profile from './pages/Profile';
 
 const App = () => {
   const dispatch = useDispatch();
-  const token = useSelector((state) => state.auth.token); // get token from Redux store
-
-  // Fetch cart items when the component mounts or when the token changes
-  // This ensures that the cart is fetched for logged-in users
   useEffect(() => {
-    if (token) {
-      dispatch(fetchCart());
-    }
-  }, [token, dispatch]);
+    dispatch(checkAuthStatus())
+      .unwrap()
+      .then((user) => {
+        if (user && user.verified) {
+          dispatch(fetchCart());
+        }
+      })
+      .catch(() => {
+        // Guest or unverified user — leave the local guest cart untouched.
+      });
+  }, [dispatch]);
 
   return (
     <div className="px-4 sm:px-[5vw] md:px-[7vw] lg:px[9vw]">
@@ -63,7 +67,6 @@ const App = () => {
       </Routes>
 
       <Footer />
-
     </div>
   )
 }
