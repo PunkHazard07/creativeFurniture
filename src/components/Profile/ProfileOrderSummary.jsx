@@ -1,4 +1,8 @@
-const OrdersSummary = ({ summary }) => {
+import { useNavigate } from "react-router-dom";
+
+const ProfileOrderSummary = ({ summary }) => {
+  const navigate = useNavigate();
+
   const cards = [
     { label: "Total Orders", count: summary?.totalOrders, bg: "bg-blue-50", text: "text-blue-500", iconBg: "bg-blue-100" },
     { label: "Pending", count: summary?.pendingOrders, bg: "bg-yellow-50", text: "text-yellow-500", iconBg: "bg-yellow-100" },
@@ -23,7 +27,10 @@ const OrdersSummary = ({ summary }) => {
       </div>
 
       <div className="mt-8">
-        <button className="inline-flex items-center text-blue-500 hover:text-blue-700 font-medium">
+        <button
+          onClick={() => navigate("/order")}
+          className="inline-flex items-center text-blue-500 hover:text-blue-700 font-medium"
+        >
           View All Orders
           <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
@@ -34,4 +41,4 @@ const OrdersSummary = ({ summary }) => {
   );
 };
 
-export default OrdersSummary;
+export default ProfileOrderSummary;

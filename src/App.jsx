@@ -11,7 +11,6 @@ import Contact from './pages/Contact';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
-import VerifyResetToken from './components/VerifyResetToken';
 import Register from './pages/Register';
 import VerifyEmail from './pages/VerifyEmail';
 import VerifiedEmail from './pages/VerifiedEmail';
@@ -24,6 +23,7 @@ import CategoryProduct from './pages/CategoryProduct';
 import NavBar from './components/NavBar';
 import Footer from './components/Footer';
 import Profile from './pages/Profile';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
 const App = () => {
@@ -53,17 +53,16 @@ const App = () => {
         <Route path='/login' element={<Login />} />
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path='/reset-password' element={<ResetPassword />} />
-        <Route path='/verify-reset-token' element={<VerifyResetToken />} />
         <Route path='/register' element={<Register />} />
         <Route path='/verify-email' element={<VerifyEmail />} />
         <Route path='/verified-email' element={<VerifiedEmail />} />
         <Route path='/resend-verification' element={<ResendVerification />} />
-        <Route path='/checkout' element={<Checkout />} />
-        <Route path='/order' element={<Order />} />
+        <Route path='/checkout' element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+        <Route path='/order' element={<ProtectedRoute><Order /></ProtectedRoute>} />
         <Route path='/order-success' element={<OrderConfirmationPage />} />
         <Route path='/product/:id' element={<Product />} />
         <Route path='/category/:category' element={<CategoryProduct />} />
-        <Route path='/profile' element={<Profile />} />
+        <Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       </Routes>
 
       <Footer />

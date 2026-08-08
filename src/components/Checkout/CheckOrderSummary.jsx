@@ -1,11 +1,9 @@
 import Spinner from "../Spinner";
 import ErrorAlert from "../ErrorAlert";
 
-const OrderSummary = ({
+const CheckOrderSummary = ({
   cartItems,
   totalPrice,
-  paymentMethod,
-  setPaymentMethod,
   stockErrors,
   isSubmitting,
   error,
@@ -51,30 +49,10 @@ const OrderSummary = ({
           <span>₦{totalPrice.toLocaleString()}</span>
         </div>
 
-        {/* Payment Methods */}
+        {/* Payment Method */}
         <div className="pt-6">
           <h4 className="text-lg font-semibold mb-2">Payment Method</h4>
-          <div className="space-y-2">
-            {[
-              { id: "cash", label: "Cash on Delivery" },
-              { id: "paystack", label: "Pay with Paystack" },
-            ].map(({ id, label }) => (
-              <div key={id} className="flex items-center">
-                <input
-                  type="radio"
-                  id={id}
-                  name="paymentMethod"
-                  value={id}
-                  checked={paymentMethod === id}
-                  onChange={() => setPaymentMethod(id)}
-                  className="mr-2"
-                />
-                <label htmlFor={id} className="text-gray-700 cursor-pointer">
-                  {label}
-                </label>
-              </div>
-            ))}
-          </div>
+          <p className="text-gray-700">Pay with Paystack</p>
         </div>
 
         <ErrorAlert message={error} onClose={clearError} />
@@ -102,4 +80,4 @@ const OrderSummary = ({
   );
 };
 
-export default OrderSummary;
+export default CheckOrderSummary;

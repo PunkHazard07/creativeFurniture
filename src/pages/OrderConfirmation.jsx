@@ -79,7 +79,6 @@ const OrderConfirmationPage = () => {
   // Clear order data from localStorage after successful load
   useEffect(() => {
     if (orderDetails && !loading) {
-      // Clear stored order data to prevent reuse
       localStorage.removeItem("latestOrderData");
     }
   }, [orderDetails, loading]);

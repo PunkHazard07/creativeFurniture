@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { clearCartFromBackend } from "../redux/cartSlice";
 import BillingForm from "../components/Checkout/BillingForm";
-import OrderSummary from "../components/Checkout/OrderSummary";
+import CheckOrderSummary from "../components/Checkout/CheckOrderSummary";
 import StockErrorsAlert from "../components/Checkout/StockErrorsAlert";
 
 const Checkout = () => {
@@ -12,7 +12,6 @@ const Checkout = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [stockErrors, setStockErrors] = useState([]);
-  const [paymentMethod, setPaymentMethod] = useState("paystack");
   const [idempotencyKey] = useState(() => crypto.randomUUID());
 
   // Single form object state
@@ -122,11 +121,9 @@ const Checkout = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <BillingForm formData={formData} onChange={handleFormChange} />
 
-          <OrderSummary
+          <CheckOrderSummary
             cartItems={cartItems}
             totalPrice={totalPrice}
-            paymentMethod={paymentMethod}
-            setPaymentMethod={setPaymentMethod}
             stockErrors={stockErrors}
             isSubmitting={isSubmitting}
             error={error}

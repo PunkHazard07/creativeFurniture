@@ -8,8 +8,8 @@ const ProductItem = ({ id, image, name, price, quantity = 0, isOutOfStock = fals
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   const handleAddToCart = (e) => {
-    e.preventDefault(); // Prevent navigation to product detail page
-    e.stopPropagation(); // Stop event bubbling
+    e.preventDefault(); 
+    e.stopPropagation(); 
     
     // Don't proceed if product is out of stock
     if (isOutOfStock || quantity === 0) {
