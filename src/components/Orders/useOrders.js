@@ -6,16 +6,14 @@ export const useOrders = () => {
   const [error, setError] = useState(null);
   const [statusUpdates, setStatusUpdates] = useState({});
 
-  const token = localStorage.getItem("authToken");
-
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/userOrders`, {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/user-orders`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
       });
 
       const data = await response.json();
@@ -32,7 +30,7 @@ export const useOrders = () => {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     fetchOrders();

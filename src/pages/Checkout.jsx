@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { clearCartFromBackend } from "../redux/cartSlice";
 import BillingForm from "../components/Checkout/BillingForm";
 import OrderSummary from "../components/Checkout/OrderSummary";
@@ -8,13 +7,13 @@ import StockErrorsAlert from "../components/Checkout/StockErrorsAlert";
 
 const Checkout = () => {
   const cartItems = useSelector((state) => state.cart.cartItems || []);
-  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [stockErrors, setStockErrors] = useState([]);
-  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [paymentMethod, setPaymentMethod] = useState("paystack");
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
 
   // Single form object state
   const [formData, setFormData] = useState({
@@ -36,7 +35,7 @@ const Checkout = () => {
   }, 0);
 
   useEffect(() => {
-    if (stockErrors.length > 0) setStockErrors([]);
+    setStockErrors([]);
   }, [cartItems]);
 
   const validateForm = () => {
@@ -59,60 +58,45 @@ const Checkout = () => {
     setError(null);
     setStockErrors([]);
 
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      setError("You must be logged in to place an order.");
-      setIsSubmitting(false);
-      return;
-    }
+    const { firstName, lastName, phone, country, address } = formData;
+    const combinedAddress = `${firstName} ${lastName}, ${address}, ${country}. Phone: ${phone}`;
 
     const orderItems = cartItems.map((item) => ({
-      productId: item.id || item.productId,
+      productId: item.productID || item.id,
       quantity: item.quantity,
-      price: item.price,
-      name: item.name,
     }));
 
-    const endpoint =
-      paymentMethod === "cash"
-        ? `${import.meta.env.VITE_BASE_URL}/place`
-        : `${import.meta.env.VITE_BASE_URL}/paystack/init`;
-
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/paystack/init`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Idempotency-Key": idempotencyKey,
         },
+        credentials: "include",
         body: JSON.stringify({
-          ...formData,
-          amount: totalPrice,
           items: orderItems,
+          address: combinedAddress,
         }),
       });
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.success) {
         dispatch(clearCartFromBackend());
 
         const orderData = {
-          _id: data.order?._id || data.order?.id,
+          _id: data.order?._id,
           ...formData,
-          amount: totalPrice,
-          paymentMethod,
-          status: data.order?.status || "Processing",
+          amount: data.order?.amount ?? totalPrice,
+          paymentMethod: "paystack",
+          status: data.order?.status || "Pending",
           items: orderItems,
-          ...(data.paystackReference && { paystackReference: data.paystackReference }),
+          reference: data.reference,
         };
 
-        if (paymentMethod === "cash") {
-          navigate("/order-success", { state: { orderData } });
-        } else if (paymentMethod === "paystack") {
-          localStorage.setItem("latestOrderData", JSON.stringify(orderData));
-          window.location.href = data.authorization_url;
-        }
+        localStorage.setItem("latestOrderData", JSON.stringify(orderData));
+        window.location.href = data.authorization_url;
       } else {
         if (data.errors && Array.isArray(data.errors)) {
           setStockErrors(data.errors);

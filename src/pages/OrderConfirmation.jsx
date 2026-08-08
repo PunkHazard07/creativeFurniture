@@ -1,6 +1,6 @@
-import { LoaderCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import Spinner from "../components/Spinner";
 
 const OrderConfirmationPage = () => {
   const navigate = useNavigate();
@@ -28,22 +28,17 @@ const OrderConfirmationPage = () => {
         console.log("State order data:", stateOrder);
         
         // First priority: verify Paystack transaction if reference exists
-        if (reference && localOrder?.paystackReference === reference) {
+        if (reference && localOrder?.reference === reference) {
           const orderId = localOrder._id;
           console.log("Verifying Paystack transaction for order:", orderId);
-          
-          const token = localStorage.getItem("authToken");
-          if (!token) {
-            throw new Error("Authentication token not found");
-          }
-          
+
           const verifyResponse = await fetch(
             `${import.meta.env.VITE_BASE_URL}/paystack/verify/${reference}/${orderId}`,
             {
               headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
               },
+              credentials: "include",
             }
           );
 
@@ -94,7 +89,7 @@ const OrderConfirmationPage = () => {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center flex flex-col items-center gap-4">
           <div className="bg-gray-800 p-4 rounded-full">
-            <LoaderCircle className="animate-spin text-white w-10 h-10" />
+            <Spinner size="lg" color="white" />
           </div>
           <h1 className="text-2xl font-bold text-gray-800">
             Please wait while we fetch your order details...
@@ -156,7 +151,7 @@ const OrderConfirmationPage = () => {
             </p>
             <p>
               <span className="font-medium">Payment Method:</span>{" "}
-              {orderDetails.paymentMethod || "Cash on Delivery"}
+              Paystack
             </p>
             <p>
               <span className="font-medium">Order Status:</span>{" "}
@@ -180,7 +175,7 @@ const OrderConfirmationPage = () => {
                         Qty: {item.quantity}
                       </p>
                     </div>
-                    <p>₦{(item.price * item.quantity).toLocaleString()}</p>
+                    <p>₦{((item.price || 0) * item.quantity).toLocaleString()}</p>
                   </div>
                 ))}
               </div>
@@ -191,13 +186,21 @@ const OrderConfirmationPage = () => {
         <div className="border-t border-gray-200 pt-6 mt-6">
           <h2 className="text-xl font-semibold mb-2">Shipping Information</h2>
           <div className="text-gray-600 space-y-1 text-sm sm:text-base">
-            <p>
-              {orderDetails.firstName} {orderDetails.lastName}
-            </p>
-            <p>{orderDetails.email}</p>
-            <p>{orderDetails.phone}</p>
-            <p>{orderDetails.address}</p>
-            <p>{orderDetails.country}</p>
+            {orderDetails.firstName || orderDetails.lastName ? (
+              <>
+                <p>
+                  {orderDetails.firstName} {orderDetails.lastName}
+                </p>
+                <p>{orderDetails.email}</p>
+                <p>{orderDetails.phone}</p>
+                <p>{orderDetails.address}</p>
+                <p>{orderDetails.country}</p>
+              </>
+            ) : (
+              // Verified-order data from the backend only carries a single
+              // combined address string, not separate fields.
+              <p>{orderDetails.address}</p>
+            )}
           </div>
         </div>
 

@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
-//load cart from localstorage if it exists(for unauthenticated users)
+//load cart from localStorage if it exist(for unauthenticated users)
 const loadCartFromLocalStorage = () => {
     const savedCart = localStorage.getItem('cartItems');
     if (!savedCart || savedCart === 'undefined') {
@@ -15,219 +15,147 @@ const loadCartFromLocalStorage = () => {
     }
 };
 
+const normalizeCartItems = (items) => {
+    if (!Array.isArray(items)) return [];
+    return items
+        .filter((item) => item && item.productId)
+        .map(item => ({
+            id: item.productId,
+            productID: item.productId,
+            name: item.name,
+            price: item.price,
+            image: item.image || '',
+            quantity: item.quantity,
+        }));
+};
+
 export const addItemToCart = createAsyncThunk(
     "cart/addItemToCart",
-    async ({productID, quantity = 1}, { getState, rejectWithValue }) => {
-        const token = localStorage.getItem('authToken');
-
-        if (!token) {
-            return rejectWithValue('User not authenticated');
-        }
-
+    async ({ productID, quantity = 1 }, { rejectWithValue }) => {
         try {
             const response = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/add`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ productID, quantity }),
+                credentials: 'include',
+                body: JSON.stringify({ productId: productID, quantity }),
             });
 
             const data = await response.json();
 
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to add item to cart');
+            if (!response.ok || !data.success) {
+                return rejectWithValue(data.message || 'Failed to add item to cart');
             }
-             // Check structure and return items directly
-            if (data.data && data.data.items) {
-                return data.data.items; // Return just the items array
-            } else if (Array.isArray(data)) {
-                return data;
-            } else {
-                console.error('Unexpected response format:', data);
-                return rejectWithValue('Unexpected response format');
-            }
-        } catch (error) {
+
+            return data.data.items;
+        } catch(error) {
             return rejectWithValue(error.message || 'Failed to add item to cart');
         }
     }
-)
+);
 
 //fetch cart from backend if user is authenticated
 export const fetchCart = createAsyncThunk(
     'cart/fetchCart',
-async () => {
-    const token = localStorage.getItem('authToken');
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/items`, {
+                method: 'GET',
+                credentials: 'include',
+            });
 
-    //if no token, fallback to local storage cart
-    if (!token) {
-        return loadCartFromLocalStorage();
-    }
-
-    try {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/items`, { 
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        const result = await response.json();
-        if (response.ok && result.success) {
-            return result.data.items; // coming from backend storage / database
-
-        } else {
-            //fallback to local storage carton backend error
-            return loadCartFromLocalStorage();
-        }
-    } catch (error) {
-        console.error('Error fetching cart:', error);
-        //fallback to local storage cart on network error
-        return loadCartFromLocalStorage();
-    }
-});
-
-// increase item quantity on backend 
-export const increaseItemQuantity = createAsyncThunk(
-    'cart/increaseItemQuantity',
-    async (productID, { getState, rejectWithValue}) => {
-        const token = localStorage.getItem('authToken');
-        
-
-        console.log('increase item with productID:', productID);
-
-        if (!token) {
-            console.error('User not authenticated or userId not found');
-            return rejectWithValue('user not authenticated or userId not found');
-        }
-
-    try {
-        const res = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/increase`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ productID }),
-        });
-        const data = await res.json();
-        
-        if (!res.ok) {
-            console.error('Failed to increase item quantity:', data.message);
-            return rejectWithValue(data.message || 'Failed to increase item quantity');
-        }
-        if (!data.success) {
-            console.error('Failed to increase item quantity:', data.message);
-            return rejectWithValue(data.message || 'Failed to increase item quantity');
-        }
-        if (!data.data || !data.data.items) {
-            console.error('Invalid response format:', data);
-            return rejectWithValue('Invalid response format');
-        }
-        return data.data.items || []; // return updated cart items
-    } catch (error) {
-            console.error('Error increasing item quantity:', error);
-            return rejectWithValue(error.message || 'Failed to increase item quantity');
-        }
-        
+            const result = await response.json();
+            if (response.ok && result.success) {
+                return result.data.items; //coming from the backend/Db
+            } else {
+                return rejectWithValue(result.message || 'Not authenticated');
+            }
+        } catch (error) {
+            console.error('Error fetching cart:', error);
+            return rejectWithValue(error.message || 'Failed to fetch cart');        }
     }
 );
 
-// decrease item quantity on backend
-export const decreaseItemQuantity = createAsyncThunk(
-    'cart/decreaseItemQuantity',
-    async (productID, { rejectWithValue }) => {
-        const token = localStorage.getItem('authToken');
-
-        if (!token) {
-            return rejectWithValue('User not authenticated');
-        }
-        
+//update item quantity
+export const updateItemQuantity = createAsyncThunk(
+    'cart/updateItemQuantity',
+    async ({ productID, delta }, { rejectWithValue }) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/decrease`, {
-                method: 'POST',
+            const res = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/quantity`, {
+                method: 'PATCH',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ productID }),
+                credentials: 'include',
+                body: JSON.stringify({ productId: productID, delta }),
             });
-            const data = await res.json();
-            if(!res.ok || !data.success) {
-                console.error('Failed to decrease item quantity:', data.message);
-                return rejectWithValue(data.message || 'Failed to decrease item quantity');
-            }
-            return data.data?.items || []; // return updated cart items
-        } catch (error) {
-            console.error('Error decreasing item quantity:', error);
-            return rejectWithValue([]); 
-        }
 
-        });
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                console.error('Failed to update item quantity:', data.message);
+                return rejectWithValue(data.message || 'Failed to update item quantity');
+            }
+
+            return data.data.items; 
+        } catch (error) {
+            console.error('Error updating item quantity:', error);
+            return rejectWithValue(error.message || 'Failed to update item quantity');
+        }
+    }
+);
 
 // remove item from cart on backend
 export const removeItemFromCart = createAsyncThunk(
     'cart/removeItemFromCart',
-    async (productID, {rejectWithValue}) => {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            return rejectWithValue('User not authenticated');
-        }
-
+    async (productID, { rejectWithValue }) => {
         try {
-            const res = await fetch (`${import.meta.env.VITE_BASE_URL}/cart/remove`, {
+            const res = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/remove`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ productID }),
+                credentials: 'include',
+                body: JSON.stringify({ productId: productID }),
             });
 
             const data = await res.json();
-            console.log('remove item from cart', data);
 
-            if (!res.ok) {
+            if (!res.ok || !data.success) {
                 return rejectWithValue(data.message || 'Failed to remove item from cart');
             }
-            return data.data?.items || []; // return updated cart items
+
+            return data.data.items; // return updated cart items
         } catch (error) {
             console.error('Error removing item from cart:', error);
             return rejectWithValue(error.message || 'Failed to remove item from cart');
         }
+    }
+);
 
-    });
-
-    //clear cart on backend
+//clear cart on backend
 export const clearCartFromBackend = createAsyncThunk(
     'cart/clearCartOnBackend',
     async (_, { rejectWithValue }) => {
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            return rejectWithValue('User not authenticated');
-        }
         try {
             const res = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/clear`, {
                 method: 'DELETE',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                credentials: 'include',
             });
 
-            if (!res.ok) {
-                const errorData = await res.json();
-                return rejectWithValue(errorData.message || 'Failed to clear backend cart');
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                return rejectWithValue(data.message || 'Failed to clear backend cart');
             }
 
-            const data = await res.json();
-            return data.data?.items || []; // return empty items array from backend
+            return data.data.items; // empty items array from backend
         } catch (error) {
             console.error('Error clearing backend cart:', error);
             return rejectWithValue(error.message || 'Failed to clear backend cart');
         }
     }
-
 );
 
 const initialState = {
@@ -235,11 +163,11 @@ const initialState = {
 };
 
 const cartSlice = createSlice({
-    name: "cart",
+    name: 'cart',
     initialState,
     reducers: {
         addToCart: (state, action) => {
-            const existingItem = state.cartItems.find((item) => item.id === action .payload.id);
+            const existingItem = state.cartItems.find((item) => item.id === action.payload.id);
             if (existingItem) {
                 existingItem.quantity += 1;
             } else {
@@ -248,14 +176,12 @@ const cartSlice = createSlice({
             // Save cart to local storage
             localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
         },
-
         removeFromCart: (state, action) => {
             state.cartItems = state.cartItems.filter(item => item.id !== action.payload);
             // Save updated cart to local storage
             localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
         },
-
-        increaseQuantity: (state, action) =>{
+        increaseQuantity: (state, action) => {
             const item = state.cartItems.find(item => item.id === action.payload);
             if (item) {
                 item.quantity += 1;
@@ -272,7 +198,6 @@ const cartSlice = createSlice({
             // Save updated cart to local storage
             localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
         },
-
         clearCart: (state) => {
             state.cartItems = [];
             // Clear cart from local storage
@@ -280,145 +205,52 @@ const cartSlice = createSlice({
         }
     },
 
-    //thunks 
+    //thunks
     extraReducers: (builder) => {
-        
+
         builder.addCase(addItemToCart.fulfilled, (state, action) => {
-            if (!action.payload) {
-                console.error("Invalidpayload:", action.payload);
-                return
-            }
-
-            //if payload is already an array of items
-            if (Array.isArray(action.payload)) {
-                state.cartItems = action.payload.map(item => ({
-                    id: item.productID || item._id, //normalize for frontend
-                    name: item.name,
-                    price: item.price,
-                    image: item.images?.[0] || item.images || item.image, //handle image path difference
-                    quantity: item.quantity,
-                    productID: item.productID || item._id, // for backend
-                    _id: item._id, // for backend
-                }));
-                return;
-            }
-
-            // If payload has an items property that is an array (nested structure)
-            else if (action.payload.items && Array.isArray(action.payload.items)) {
-            state.cartItems = action.payload.items.map(item => ({
-            id: item.productID || item._id, // normalize for frontend
-            name: item.name,
-            price: item.price,
-            image: item.image || item.images?.[0] || item.images,
-            quantity: item.quantity,
-            productID: item.productID || item._id, // for backend
-        }));
-    }
-            
-            // Save cart to local storage
+            state.cartItems = normalizeCartItems(action.payload);
             localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
         });
 
         builder.addCase(addItemToCart.rejected, (state, action) => {
             console.error('Failed to add item to cart:', action.payload);
-        })
+        });
 
         builder.addCase(fetchCart.fulfilled, (state, action) => {
-            
-            if(!action.payload || !Array.isArray(action.payload)) {
-                console.error('Invalid payload:', action.payload); 
-                state.cartItems = []; // Reset cart to empty array
-                return;
-            };
-
-            state.cartItems = action.payload.map(item => ({
-                id: item.productID?._id || item.id || item.productID, //normalize for frontend
-                name: item.productID?.name || item.name,
-                price: item.productID?.price || item.price,
-                image: item.productID?.images?.[0] || item.images?.[0] || item.image || '', //handle image path difference
-                quantity: item.quantity,
-                productID: item.productID?._id || item.productID, // for backend
-            }));
-            // Save cart to local storage
+            state.cartItems = normalizeCartItems(action.payload);
             localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
         });
 
-        builder.addCase(increaseItemQuantity.fulfilled, (state, action) => {
-            
-            console.log('successfully increased item quantity:', action.payload);
-            if(!action.payload || !Array.isArray(action.payload)) {
-                console.error('Invalid payload:', action.payload);
-                return;
-            } ;
+        // Guests and unverified users hit this branch — leave the local cart
+        // untouched. For verified users, a rejection usually means a transient
+        // network error; we also keep state intact so we don't clobber a
+        // guest-shaped cart with an empty normalized array.
+        builder.addCase(fetchCart.rejected, (state, action) => {
+            console.error('Failed to fetch cart:', action.payload);
+        });
 
-
-            state.cartItems = action.payload.map(item => ({
-                id: item.productID._id || item.productID, //normalize for frontend
-                name: item.productID.name || item.name,
-                price: item.productID.price || item.price,
-                image: item.productID.images?.[0] || item.images, //handle image path difference
-                quantity: item.quantity,
-                productID: item.productID._id || item.productID, // for backend
-            }));
-            // Save cart to local storage
+        builder.addCase(updateItemQuantity.fulfilled, (state, action) => {
+            state.cartItems = normalizeCartItems(action.payload);
             localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
         });
 
-        builder.addCase(decreaseItemQuantity.fulfilled, (state, action) => {
-            
-            if(!action.payload || !Array.isArray(action.payload)) {
-                console.error('Invalid payload:', action.payload);
-                return;
-            }
-
-            state.cartItems = action.payload.map(item => ({
-                id: item.productID._id || item.productID, //normalize for frontend
-                name: item.productID.name || item.name,
-                price: item.productID.price || item.price,
-                image: item.productID.images?.[0] || item.images, //handle image path difference
-                quantity: item.quantity,
-                productID: item.productID._id || item.productID, // for backend
-            }));
-            // Save cart to local storage
-            localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
+        builder.addCase(updateItemQuantity.rejected, (state, action) => {
+            console.error('Failed to update item quantity:', action.payload);
         });
 
         builder.addCase(removeItemFromCart.fulfilled, (state, action) => {
-            // Check if payload exists and is an array
-        if (!action.payload) {
-        console.error('Invalid payload:', action.payload);
-        return;
-    }
-    
-        // Handle both array format and object with items property format
-        const items = Array.isArray(action.payload) 
-        ? action.payload 
-        : (action.payload.data?.items || []);
-    
-        if (!Array.isArray(items)) {
-        console.error('Invalid items format:', items);
-        return;
-    }
-            state.cartItems = action.payload.map(item => ({
-                id: item.productID._id || item.productID, //normalize for frontend
-                name: item.productID.name || item.name,
-                price: item.productID.price||item.price,
-                image: item.productID.images?.[0] || item.image, // handle image path difference
-                quantity: item.quantity,
-                productID: item.productID._id || item.productID, // for backend
-            }));
-            // Save cart to local storage
+            state.cartItems = normalizeCartItems(action.payload);
             localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
         });
-        
+
         // Handle rejected state for removeItemFromCart
         builder.addCase(removeItemFromCart.rejected, (state, action) => {
             console.error('Failed to remove item from cart:', action.payload);
         });
 
         builder.addCase(clearCartFromBackend.fulfilled, (state, action) => {
-            state.cartItems = action.payload;
-            // Clear cart from local storage
+            state.cartItems = normalizeCartItems(action.payload);
             localStorage.removeItem('cartItems');
         });
 
@@ -428,9 +260,6 @@ const cartSlice = createSlice({
     }
 });
 
-//export actions
 export const { addToCart, removeFromCart, increaseQuantity, decreaseQuantity, clearCart } = cartSlice.actions;
-
-//export reducer
 
 export default cartSlice.reducer;
