@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import LoadingState from "../components/Profile/LoadingState";
 import UserCard from "../components/Profile/UserCard";
-import OrdersSummary from "../components/Profile/OrderSummary";
+import ProfileOrderSummary from "../components/Profile/ProfileOrderSummary";
 import ErrorAlert from "../components/ErrorAlert";
 
 const Profile = () => {
@@ -70,7 +70,7 @@ const Profile = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <UserCard user={user} />
-          <OrdersSummary summary={ordersSummary} />
+          <ProfileOrderSummary summary={ordersSummary} />
         </div>
       </div>
     </div>

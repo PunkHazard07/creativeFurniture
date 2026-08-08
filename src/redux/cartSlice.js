@@ -222,10 +222,6 @@ const cartSlice = createSlice({
             localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
         });
 
-        // Guests and unverified users hit this branch — leave the local cart
-        // untouched. For verified users, a rejection usually means a transient
-        // network error; we also keep state intact so we don't clobber a
-        // guest-shaped cart with an empty normalized array.
         builder.addCase(fetchCart.rejected, (state, action) => {
             console.error('Failed to fetch cart:', action.payload);
         });

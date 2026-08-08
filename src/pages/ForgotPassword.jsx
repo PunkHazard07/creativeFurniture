@@ -1,8 +1,8 @@
-// src/pages/ForgotPassword.jsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const ForgotPassword = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
@@ -86,6 +86,12 @@ const ForgotPassword = () => {
             <p className="text-gray-600 mb-4">
               Don't forget to check your spam folder if you don't see the email in your inbox.
             </p>
+            <button
+              onClick={() => navigate('/reset-password', { state: { email } })}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition duration-200"
+            >
+              Enter Reset Code
+            </button>
           </div>
         )}
         
