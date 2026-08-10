@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, addItemToCart } from "../redux/cartSlice";
+import Spinner from "../components/Spinner";
 
 const Product = () => {
   const { id } = useParams(); // Get product ID from URL
@@ -63,7 +64,7 @@ const Product = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-500"></div></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><Spinner size="lg" color="indigo" /></div>;
   if (error) return <div className="min-h-screen flex items-center justify-center"><p className="text-center text-red-500 p-4 bg-red-50 rounded-lg">{error}</p></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center"><p className="text-center text-gray-500">Product not found</p></div>;
 

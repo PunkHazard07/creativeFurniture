@@ -34,8 +34,26 @@ export const useOrders = () => {
 
   useEffect(() => {
     fetchOrders();
-    const intervalId = setInterval(() => fetchOrders(), 5000);
-    return () => clearInterval(intervalId);
+
+    let intervalId = setInterval(() => fetchOrders(), 5000);
+
+    // Pause polling while the tab is in the background — no point
+    // hitting the server every 5s for a page nobody's looking at.
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        clearInterval(intervalId);
+      } else {
+        fetchOrders(); // catch up immediately on return
+        intervalId = setInterval(() => fetchOrders(), 5000);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, [fetchOrders]);
 
   useEffect(() => {

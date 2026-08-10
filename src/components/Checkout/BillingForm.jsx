@@ -3,7 +3,6 @@ const BillingForm = ({ formData, onChange }) => {
     { label: "First Name *", name: "firstName", type: "text" },
     { label: "Last Name *", name: "lastName", type: "text" },
     { label: "Phone Number *", name: "phone", type: "tel" },
-    { label: "Country *", name: "country", type: "text" },
     { label: "Address *", name: "address", type: "text" },
     { label: "Email *", name: "email", type: "email" },
   ];

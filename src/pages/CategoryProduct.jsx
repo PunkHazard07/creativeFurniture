@@ -13,7 +13,7 @@ const CategoryProduct = () => {
       try {
         setLoading(true);
         // Use the encoded category parameter from the URL
-        const response = await fetch(`http://localhost:8080/api/categories/${encodeURIComponent(category)}`);
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/categories/${encodeURIComponent(category)}`);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch products for category: ${category}`);

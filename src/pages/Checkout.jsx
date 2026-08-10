@@ -19,7 +19,6 @@ const Checkout = () => {
     firstName: "",
     lastName: "",
     phone: "",
-    country: "",
     address: "",
     email: "",
   });
@@ -38,11 +37,12 @@ const Checkout = () => {
   }, [cartItems]);
 
   const validateForm = () => {
-    const { firstName, lastName, phone, country, address, email } = formData;
-    if (!firstName || !lastName || !phone || !country || !address || !email) {
+    const { firstName, lastName, phone, address, email } = formData;
+    if (!firstName || !lastName || !phone || !address || !email) {
       setError("Please fill in all required fields.");
       return false;
     }
+    
     if (!email.includes("@") || !email.includes(".")) {
       setError("Please enter a valid email address.");
       return false;
@@ -57,8 +57,8 @@ const Checkout = () => {
     setError(null);
     setStockErrors([]);
 
-    const { firstName, lastName, phone, country, address } = formData;
-    const combinedAddress = `${firstName} ${lastName}, ${address}, ${country}. Phone: ${phone}`;
+    const { firstName, lastName, phone, address, email } = formData;
+    const shippingDetails = { firstName, lastName, phone, email, address };
 
     const orderItems = cartItems.map((item) => ({
       productId: item.productID || item.id,
@@ -75,7 +75,7 @@ const Checkout = () => {
         credentials: "include",
         body: JSON.stringify({
           items: orderItems,
-          address: combinedAddress,
+          shippingDetails
         }),
       });
 
@@ -86,7 +86,7 @@ const Checkout = () => {
 
         const orderData = {
           _id: data.order?._id,
-          ...formData,
+          shippingDetails,
           amount: data.order?.amount ?? totalPrice,
           paymentMethod: "paystack",
           status: data.order?.status || "Pending",
