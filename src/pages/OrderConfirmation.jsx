@@ -185,20 +185,17 @@ const OrderConfirmationPage = () => {
         <div className="border-t border-gray-200 pt-6 mt-6">
           <h2 className="text-xl font-semibold mb-2">Shipping Information</h2>
           <div className="text-gray-600 space-y-1 text-sm sm:text-base">
-            {orderDetails.firstName || orderDetails.lastName ? (
+            {orderDetails.shippingDetails ? (
               <>
                 <p>
-                  {orderDetails.firstName} {orderDetails.lastName}
+                  {orderDetails.shippingDetails.firstName} {orderDetails.shippingDetails.lastName}
                 </p>
-                <p>{orderDetails.email}</p>
-                <p>{orderDetails.phone}</p>
-                <p>{orderDetails.address}</p>
-                <p>{orderDetails.country}</p>
+                <p>{orderDetails.shippingDetails.email}</p>
+                <p>{orderDetails.shippingDetails.phone}</p>
+                <p>{orderDetails.shippingDetails.address}</p>
               </>
             ) : (
-              // Verified-order data from the backend only carries a single
-              // combined address string, not separate fields.
-              <p>{orderDetails.address}</p>
+              <p>Shipping details unavailable.</p>
             )}
           </div>
         </div>

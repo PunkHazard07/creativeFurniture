@@ -48,4 +48,16 @@ export default [
       'import/no-unresolved': 'off',
     },
   },
+  {
+    files: ['**/*.test.{js,jsx}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node
+      },
+    },
+    rules: {
+      'import/named': 'off',
+    },
+  },
 ]
