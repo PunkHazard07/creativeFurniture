@@ -1,5 +1,3 @@
-
-
 import React from 'react'
 import VerifyToken from './components/VerifyToken'
 
