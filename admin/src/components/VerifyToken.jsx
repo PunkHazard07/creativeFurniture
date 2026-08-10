@@ -3,7 +3,7 @@ import {  Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Login from "./Login"
 import Register from "./Register";
 import Dashboard from "../pages/Dashboard";
-import Add from "../pages/Add";
+import AddProduct from "../pages/AddProduct";
 import List from "../pages/List";
 import Orders from "../pages/Orders";
 import Navbar from "./Navbar";
@@ -91,7 +91,7 @@ const VerifyToken = () => {
               <Routes>
                 <Route path="*" element={<Navigate to="/dashboard" />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/add" element={<Add />} />
+                <Route path="/add-product" element={<AddProduct />} />
                 <Route path="/list" element={<List />} />
                 <Route path="/orders" element={<Orders />} />
               </Routes>

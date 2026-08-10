@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { fetchWithAuth } from "../utils/api";
 
-const Add = () => {
+const AddProduct = () => {
   const [file, setFile] = useState(null); 
   const [productName, setProductName] = useState(""); 
   const [description, setDescription] = useState("");
@@ -195,4 +195,4 @@ const Add = () => {
   );
 };
 
-export default Add;
+export default AddProduct;
