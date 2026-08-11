@@ -1,4 +1,3 @@
-import React from "react";
 import ProductCard from "../components/Products/ProductCard";
 import EditProductModal from "../components/Products/EditProductModal";
 import { useProducts } from "../hooks/useProducts";

@@ -39,7 +39,6 @@ const AddProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("adminToken");
 
     try {
       const formData = new FormData();

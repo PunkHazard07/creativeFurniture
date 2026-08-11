@@ -1,5 +1,3 @@
-import React from "react";
-
 const CATEGORIES = ["Living Room", "Bedroom", "Dining Room", "Mirror"];
 
 const EditProductModal = ({

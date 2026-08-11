@@ -1,81 +1,35 @@
-//fucnction to get stored tokens
-const getStoredTokens =() => {
-    return {
-        accessToken: localStorage.getItem("token"),
-        refreshToken: localStorage.getItem('refreshToken'),
-    };
-};
+import { useAuthStore } from "../stores/authStore";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-//function to refresh token
-const refreshAccessToken = async () => {
-    const { refreshToken } = getStoredTokens();
-    if(!refreshToken){
-        return null; //no refresh token available
-    }
-
-    try {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/refresh-token`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                refreshToken,
-            }),
-        })
-            const data = await response.json();
-
-            if(response.ok){
-                localStorage.setItem('token', data.accessToken);
-                localStorage.setItem('refreshToken', data.refreshToken);
-                return data.accessToken;
-            } else{
-                return null; //refresh Failed
-            }
-    } catch (error) {
-        console.error('error refreshing token:', error);
-        return null;
-    }
-};
-
-//function to make api requests with token refresh
-const fetchWithAuth = async(url, options = {}) => {
-    let { accessToken } = getStoredTokens();
+const fetchWithAuth = async (url, options = {}) => {
+    const { token, refreshAccessToken } = useAuthStore.getState();
 
     if (!options.headers) {
         options.headers = {};
     }
+    options.headers["Authorization"] = `Bearer ${token}`
 
-    options.headers['Authorization'] =`Bearer ${accessToken}`;
+    let response = await fetch(`${BASE_URL}${url}`, options);
 
-    let response =  await fetch(`${import.meta.env.VITE_BASE_URL}/api${url}`, options);
+    if (response.status === 401) {
+    const newAccessToken = await refreshAccessToken();
 
-    if(response.status === 401){
-        //token expired, try to refresh it
-        const newAccessToken = await refreshAccessToken();
-
-        if(newAccessToken){
-            //update the header with the new access token
-            options.headers['Authorization'] = `Bearer ${newAccessToken}`;
-            response = await fetch(`${import.meta.env.VITE_BASE_URL}/api${url}`, options);
-        } else{
-            //logout userif refresh fails
-            localStorage.removeItem('token');
-            localStorage.removeItem('refreshToken');
-            window.location.href = '/login';
-            return null;
-        }
+    if (newAccessToken) {
+        options.headers["Authorization"] = `Bearer ${newAccessToken}`;
+        response = await fetch(`${BASE_URL}${url}`, options);
+    } else {
+        window.location.href = "/login";
+        return null;
     }
-    //handle response safely
+}
+
     try {
         const jsonData = await response.json();
         return jsonData;
     } catch (error) {
-        console.error('error parsing response:', error);
-        throw new Error('invalid server response')
+        console.error("Error parsing response:", error);
+        throw new Error("Invalid server response");
     }
-}
+};
 
-export { fetchWithAuth};
-
-
+export { fetchWithAuth };

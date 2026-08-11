@@ -1,5 +1,3 @@
-import React from "react";
-
 const FeedbackMessage = ({ message }) => {
   if (!message) return null;
 
