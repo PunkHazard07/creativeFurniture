@@ -1,4 +1,3 @@
-import React from "react";
 import OrderStatusSelect from "./OrderStatusSelect";
 
 const OrderCard = ({ order, userDisplayName, onStatusChange, onArchive, onDelete }) => {

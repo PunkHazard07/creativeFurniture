@@ -1,5 +1,3 @@
-import React from "react";
-
 const statusOptions = ["Pending", "Shipped", "Delivered", "Cancelled"];
 
 const OrderFilters = ({ filterStatus, setFilterStatus, showArchived, setShowArchived }) => {
