@@ -1,27 +1,31 @@
-import { useOrders } from "../hooks/useOrders";
+import { useEffect } from "react";
+import { useOrderStore, selectFilteredOrders, getUserDisplayName } from "../stores/orderStore";
 import OrderFilters from "../components/Orders/OrderFilters";
 import FeedbackMessage from "../components/Orders/FeedbackMessage";
 import OrderTableRow from "../components/Orders/OrderTableRow";
 import OrderCard from "../components/Orders/OrderCard";
 
 const Orders = () => {
-  const {
-    filteredOrders,
-    loading,
-    error,
-    updateMessage,
-    filterStatus,
-    setFilterStatus,
-    showArchived,
-    setShowArchived,
-    updateStatus,
-    deleteOrder,
-    archiveOrder,
-    getUserDisplayName,
-  } = useOrders();
+  const filteredOrders = useOrderStore(selectFilteredOrders);
+  const loading = useOrderStore((s) => s.loading);
+  const error = useOrderStore((s) => s.error);
+  const updateMessage = useOrderStore((s) => s.updateMessage);
+  const filterStatus = useOrderStore((s) => s.filterStatus);
+  const setFilterStatus = useOrderStore((s) => s.setFilterStatus);
+  const showArchived = useOrderStore((s) => s.showArchived);
+  const setShowArchived = useOrderStore((s) => s.setShowArchived);
+  const updateStatus = useOrderStore((s) => s.updateStatus);
+  const deleteOrder = useOrderStore((s) => s.deleteOrder);
+  const archiveOrder = useOrderStore((s) => s.archiveOrder);
+  const fetchOrders = useOrderStore((s) => s.fetchOrders);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
   if (loading) return <div className="p-4 text-center">Loading orders...</div>;
   if (error) return <div className="p-4 text-center text-red-500">Error: {error}</div>;
+
 
   return (
     <div className="p-4 sm:p-6">
@@ -86,6 +90,6 @@ const Orders = () => {
       )}
     </div>
   );
-};
+}
 
-export default Orders;
+export default Orders
