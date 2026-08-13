@@ -1,20 +1,24 @@
+import { useEffect } from "react";
 import ProductCard from "../components/Products/ProductCard";
 import EditProductModal from "../components/Products/EditProductModal";
-import { useProducts } from "../hooks/useProducts";
+import { useProductStore } from "../stores/productStore";
 
-const List = () => {
-  const {
-    products,
-    editingProduct,
-    setEditingProduct,
-    removeProduct,
-    saveChanges,
-    handleQuantityChange,
-    handleOutOfStockChange,
-  } = useProducts();
+const ListProduct = () => {
+  const products = useProductStore((s) => s.products);
+  const editingProduct = useProductStore((s) => s.editingProduct);
+  const setEditingProduct = useProductStore((s) => s.setEditingProduct);
+  const removeProduct = useProductStore((s) => s.removeProduct);
+  const saveChanges = useProductStore((s) => s.saveChanges);
+  const handleQuantityChange = useProductStore((s) => s.handleQuantityChange);
+  const handleOutOfStockChange = useProductStore((s) => s.handleOutOfStockChange);
+  const fetchProducts = useProductStore((s) => s.fetchProducts);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   return (
-    <div className="container mx-auto p-6">
+      <div className="container mx-auto p-6">
       <h2 className="text-2xl font-semibold mb-4">Product List</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -40,4 +44,4 @@ const List = () => {
   );
 };
 
-export default List;
+export default ListProduct

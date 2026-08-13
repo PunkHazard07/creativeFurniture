@@ -4,7 +4,7 @@ import Login from "./Login"
 import Register from "./Register";
 import Dashboard from "../pages/Dashboard";
 import AddProduct from "../pages/AddProduct";
-import List from "../pages/List";
+import ListProduct from "../pages/ListProduct";
 import Orders from "../pages/Orders";
 import Navbar from "./Navbar";
 import SideBar from "./SideBar";
@@ -59,7 +59,7 @@ const VerifyToken = () => {
                 <Route path="*" element={<Navigate to="/dashboard" />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/add-product" element={<AddProduct />} />
-                <Route path="/list" element={<List />} />
+                <Route path="/list-product" element={<ListProduct />} />
                 <Route path="/orders" element={<Orders />} />
               </Routes>
             </div>
