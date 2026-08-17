@@ -64,7 +64,7 @@ export const useAuthStore = create((set, get) => ({
             }
 
             localStorage.setItem('token', data.token);
-            set({ token: data.accesstoken, isValidToken: true, isLoggingIn: false });
+            set({ token: data.accessToken, isValidToken: true, isLoggingIn: false });
             return { success: true };
         } catch (error) {
             const message = error.message || "Login failed";
@@ -73,7 +73,7 @@ export const useAuthStore = create((set, get) => ({
         }
     },
 
-    logout: () => {
+    logout: async () => {
         const token = get().token;
 
         try {

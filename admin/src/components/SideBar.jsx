@@ -14,12 +14,12 @@ return (
         <span>Dashboard</span>
         </Link>
 
-        <Link to="/add" className="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-700">
+        <Link to="/add-product" className="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-700">
         <FaBoxOpen className="text-xl" />
         <span>Add Product</span>
         </Link>
 
-        <Link to="/list" className="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-700">
+        <Link to="/list-product" className="flex items-center space-x-2 p-3 rounded-lg hover:bg-gray-700">
         <FaClipboardList className="text-xl" />
         <span>Product List</span>
         </Link>
