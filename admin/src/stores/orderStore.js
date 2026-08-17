@@ -13,7 +13,7 @@ export const useOrderStore = create((set, get) => ({
     showArchived: false,
 
     //helper to show temporary UI feedback messages. 
-    _showNotification: (type, test, duration = 3000) => {
+    _showNotification: (type, text, duration = 3000) => {
         if (notificationTimeoutId) {
             clearTimeout(notificationTimeoutId);
             notificationTimeoutId = null;
@@ -84,13 +84,13 @@ export const useOrderStore = create((set, get) => ({
                 ),
             }));
             get()._showNotification("success", "Status updated successfully!", 3000);
-        } catch (error) {
+        } catch (err) {
             console.error("Error updating order status:", err);
             get()._showNotification("error", `Error: ${err.message}`, 5000);
         }
     },
 
-    deleteOrder: async (oderId) => {
+    deleteOrder: async (orderId) => {
         if (
             !window.confirm(
                 "Are you sure you want to delete this order? This action cannot be undone."
@@ -155,7 +155,7 @@ export const useOrderStore = create((set, get) => ({
             : state.orders.filter((order) => order._id !== orderId),
         }));
             get()._showNotification("success", "Order archived successfully!", 3000);
-        } catch (error) {
+        } catch (err) {
             console.error("Error archiving order:", err);
             get()._showNotification("error", `Error: ${err.message}`, 5000);
         }

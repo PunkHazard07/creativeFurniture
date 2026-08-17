@@ -3,7 +3,7 @@ import { useAuthStore } from './authStore';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-export const useProductStore = create((set, get) => ({
+export const useProductStore = create((set) => ({
     products: [],
     editingProduct: null,
 

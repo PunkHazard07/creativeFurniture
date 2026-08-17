@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 
-const Navbar = ({setToken}) => {
+const Navbar = () => {
 const navigate = useNavigate();
 const logout = useAuthStore((s) => s.logout);
 
