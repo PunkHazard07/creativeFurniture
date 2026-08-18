@@ -67,7 +67,7 @@ const NavBar = () => {
 
             {/* Logo & Business Name */}
             <Link to="/" className="flex items-center space-x-2">
-                <p className="text-xl font-bold">Creative Furniture</p>
+                <img src="/logo.jpg" alt="Creative Furniture Logo" className='h-10 sm:h-12 w-auto object-contain rounded' />
             </Link>
 
             {/* Navigation Links */}

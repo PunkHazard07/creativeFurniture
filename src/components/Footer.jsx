@@ -1,4 +1,5 @@
 import React from 'react';
+import logo from '/logo.jpg';
 
 const Footer = () => {
   return (
@@ -7,10 +8,9 @@ const Footer = () => {
         
         {/* Left Section (Company Info) */}
         <div className="flex flex-col gap-6 sm:max-w-[480px]">
-          {/* Placeholder for Logo */}
-          <div className="w-24 h-12 bg-gray-300 rounded-md mb-3"></div>  
+          <img src={logo} alt="Company Logo" className="w-24 h-auto object-contain mb-3" />
           <p className="text-gray-600 text-sm leading-relaxed">
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Magnam, voluptates accusamus quidem quos eum, provident obcaecati officiis ad, consequuntur nisi possimus eius debitis voluptatem fugiat hic labore iusto totam tempora.
+            Creative Furniture crafts thoughtfully designed, minimalist pieces that blend timeless comfort with contemporary elegance. We transform modern living spaces into warm, functional sanctuaries made for everyday life.
           </p>
         </div>
 

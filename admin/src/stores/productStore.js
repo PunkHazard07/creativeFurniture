@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { useAuthStore } from './authStore';
+import { fetchWithAuth } from '../utils/api';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -18,23 +18,19 @@ export const useProductStore = create((set) => ({
     },
 
     removeProduct: async (id) => {
-        const { token } = useAuthStore.getState();
-
         try {
-            const response = await fetch(`${BASE_URL}/remove/${id}`, {
+            const data = await fetchWithAuth(`/remove/${id}`, {
                 method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
             });
 
-            if (response.ok) {
+            if (!data) return;
+
+            if (data.ok) {
                 set((state) => ({
                     products: state.products.filter((product) => product._id !== id),
                 }));
             } else {
-                console.error("Failed to remove product");
+                console.error("Failed to remove product:", data.message);
             }
         } catch (error) {
             console.error("Error removing product:", error);
@@ -42,20 +38,18 @@ export const useProductStore = create((set) => ({
     },
 
     saveChanges: async (updatedProduct) => {
-        const { token } = useAuthStore.getState();
-
         try {
-            const response = await fetch(`${BASE_URL}/update/${updatedProduct._id}`, {
+            const data = await fetchWithAuth(`/update/${updatedProduct._id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(updatedProduct)
             });
 
-            if (response.ok) {
-                const data = await response.json();
+            if (!data) return;
+
+            if (data.ok) {
                 set((state) => ({
                     products: state.products.map((p) =>
                         p._id === updatedProduct._id ? data.product : p
@@ -63,7 +57,7 @@ export const useProductStore = create((set) => ({
                     editingProduct: null,
                 }));
             } else {
-                console.error("Failed to update product");
+                console.error("Failed to update product:", data.message);
             }
         } catch (error) {
             console.error("Error updating product:", error);

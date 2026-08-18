@@ -34,10 +34,12 @@ export const useAuthStore = create((set, get) => ({
 
             if (response.ok && data.success) {
                 set({ token, isValidToken: true, isCheckingToken: false });
-            } else {
-                localStorage.removeItem("token");
-                set({ token: null, isValidToken: false, isCheckingToken: false });
+                return;
             }
+
+            await get().refreshAccessToken();
+            set({ isCheckingToken: false });
+
         } catch (error) {
             console.error("Error verifying token:", error);
             set({ isValidToken: false, isCheckingToken: false });
@@ -63,7 +65,7 @@ export const useAuthStore = create((set, get) => ({
                 throw new Error(data.message || "Login failed");
             }
 
-            localStorage.setItem('token', data.token);
+            localStorage.setItem('token', data.accessToken);
             set({ token: data.accessToken, isValidToken: true, isLoggingIn: false });
             return { success: true };
         } catch (error) {
@@ -90,27 +92,39 @@ export const useAuthStore = create((set, get) => ({
         }
     },
 
-    refreshAccessToken: async () => {
-    try {
-        const response = await fetch(`${BASE_URL}/refresh-token`, {
-            method: "POST",
-            credentials: "include",
-        });
-
-        const data = await response.json();
-
-        if (!response.ok || !data.accessToken) {
-            get().logout();
-        return null;
+refreshAccessToken: async () => {
+        // If a refresh is already in flight, piggyback on it instead of
+        // firing a second /refresh-token request.
+        if (refreshPromise) {
+            return refreshPromise;
         }
 
-        localStorage.setItem("token", data.accessToken);
-        set({ token: data.accessToken, isValidToken: true });
-        return data.accessToken;
-    } catch (error) {
-        console.error("Refresh token error:", error);
-        get().logout();
-        return null;
-    }
-}
+        refreshPromise = (async () => {
+            try {
+                const response = await fetch(`${BASE_URL}/refresh-token`, {
+                    method: "POST",
+                    credentials: "include",
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.accessToken) {
+                    get().logout();
+                    return null;
+                }
+
+                localStorage.setItem("token", data.accessToken);
+                set({ token: data.accessToken, isValidToken: true });
+                return data.accessToken;
+            } catch (error) {
+                console.error("Refresh token error:", error);
+                get().logout();
+                return null;
+            } finally {
+                refreshPromise = null;
+            }
+        })();
+
+        return refreshPromise;
+    },
 }));

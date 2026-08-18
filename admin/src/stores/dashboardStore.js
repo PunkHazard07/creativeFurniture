@@ -1,8 +1,6 @@
 import { create } from 'zustand';
-import { useAuthStore } from './authStore';
+import { fetchWithAuth } from '../utils/api';
 import socketService from '../services/socket';
-
-const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const initialDashboardData = {
     salesMetrics: { totalOrders: 0, totalSales: 0 },
@@ -34,26 +32,22 @@ export const useDashboardStore = create((set, get) => ({
     salesChartLoading: false,
 
     fetchDashboardData: async () => {
-        const { token } = useAuthStore.getState();
         const { timePeriod, ordersPage, productsPage } = get();
 
         set({ loading: true });
 
         try {
-            const response = await fetch(
-                `${BASE_URL}/dash-metrics?timePeriod=${timePeriod}&ordersPage=${ordersPage}&productsPage=${productsPage}&pageSize=5`,
-            {
-                headers: { Authorization: `Bearer ${token}` },
+            const data = await fetchWithAuth(
+                `/dash-metrics?timePeriod=${timePeriod}&ordersPage=${ordersPage}&productsPage=${productsPage}&pageSize=5`
+            );
+
+            if (!data) return; // refresh failed, already redirected to /login
+
+            if (data.ok && data.success) {
+                set({ dashboardData: data.data, error: null, loading: false });
+            } else {
+                set({ error: 'Failed to fetch dashboard data', loading: false });
             }
-        );
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            set({ dashboardData: data.data, error: null, loading: false });
-        } else {
-            set({ error: 'Failed to fetch dashboard data', loading: false });
-        }
         } catch (err) {
             console.error('Error fetching dashboard data:', err);
             set({ error: err.message || 'Failed to fetch dashboard data', loading: false });
@@ -61,25 +55,22 @@ export const useDashboardStore = create((set, get) => ({
     },
 
     fetchSalesChart: async (days = 7) => {
-        const { token } = useAuthStore.getState();
         set({ salesChartLoading: true });
 
         try {
-            const response = await fetch(`${BASE_URL}/sales-chart?days=${days}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const data = await fetchWithAuth(`/sales-chart?days=${days}`);
 
-            const data = await response.json();
+            if (!data) return; // refresh failed, already redirected to /login
 
-            if (response.ok && data.success) {
+            if (data.ok && data.success) {
                 set({ salesChartData: data.data, salesChartLoading: false });
             } else {
                 console.error('Failed to fetch sales chart data');
                 set({ salesChartLoading: false });
             }
         } catch (err) {
-                console.error('Error fetching sales chart data:', err);
-                set({ salesChartLoading: false });
+            console.error('Error fetching sales chart data:', err);
+            set({ salesChartLoading: false });
         }
     },
 
@@ -97,27 +88,27 @@ export const useDashboardStore = create((set, get) => ({
         const { ordersPage, dashboardData } = get();
         const totalPages = dashboardData.recentActivity.recentOrders.pagination.totalPages;
 
-    if (direction === 'prev' && ordersPage > 1) {
-        set({ ordersPage: ordersPage - 1 });
-        get().fetchDashboardData();
-    } else if (direction === 'next' && ordersPage < totalPages) {
-        set({ ordersPage: ordersPage + 1 });
-        get().fetchDashboardData();
-    }
-  },
+        if (direction === 'prev' && ordersPage > 1) {
+            set({ ordersPage: ordersPage - 1 });
+            get().fetchDashboardData();
+        } else if (direction === 'next' && ordersPage < totalPages) {
+            set({ ordersPage: ordersPage + 1 });
+            get().fetchDashboardData();
+        }
+    },
 
     handleProductsPagination: (direction) => {
         const { productsPage, dashboardData } = get();
         const totalPages = dashboardData.recentActivity.recentProducts.pagination.totalPages;
 
-    if (direction === 'prev' && productsPage > 1) {
-        set({ productsPage: productsPage - 1 });
-        get().fetchDashboardData();
-    } else if (direction === 'next' && productsPage < totalPages) {
-        set({ productsPage: productsPage + 1 });
-        get().fetchDashboardData();
-    }
-  },
+        if (direction === 'prev' && productsPage > 1) {
+            set({ productsPage: productsPage - 1 });
+            get().fetchDashboardData();
+        } else if (direction === 'next' && productsPage < totalPages) {
+            set({ productsPage: productsPage + 1 });
+            get().fetchDashboardData();
+        }
+    },
 
     initSocketListeners: () => {
         if (socketUnsubscribers.length > 0) return;
