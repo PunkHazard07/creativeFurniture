@@ -25,7 +25,7 @@ const fetchWithAuth = async (url, options = {}) => {
 
     try {
         const jsonData = await response.json();
-        return jsonData;
+        return { ...jsonData, ok: response.ok, status: response.status };
     } catch (error) {
         console.error("Error parsing response:", error);
         throw new Error("Invalid server response");
