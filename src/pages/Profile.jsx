@@ -61,15 +61,15 @@ const Profile = () => {
   if (loading) return <LoadingState />;
 
   return (
-    <div className="bg-gray-50 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6 text-center sm:text-left">
+    <div className="bg-gray-50 min-h-screen py-6 px-3 sm:py-8 sm:px-6 lg:px-8 overflow-x-hidden">
+      <div className="max-w-5xl mx-auto w-full">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 text-center sm:text-left">
           My Profile
         </h1>
 
         <ErrorAlert message={error} onClose={() => setError(null)} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <UserCard user={user} />
           <ProfileOrderSummary summary={ordersSummary} />
         </div>

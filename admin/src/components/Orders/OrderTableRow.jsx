@@ -1,6 +1,15 @@
 import OrderStatusSelect from "./OrderStatusSelect";
 
 const OrderTableRow = ({ order, userDisplayName, onStatusChange, onArchive, onDelete }) => {
+  const shippingAddress = order.shippingDetails?.address ?? "—";
+
+  // Order model doesn't store a payment method; derive a friendly label from isPaid.
+  const paymentMethodLabel = order.paymentMethod
+    ? order.paymentMethod
+    : order.isPaid
+    ? "Paid"
+    : "Pending payment";
+
   return (
     <tr
       className={`border-b hover:bg-gray-50 ${
@@ -8,7 +17,7 @@ const OrderTableRow = ({ order, userDisplayName, onStatusChange, onArchive, onDe
       }`}
     >
       <td className="p-4">{userDisplayName}</td>
-      <td className="p-4">{order.address}</td>
+      <td className="p-4">{shippingAddress}</td>
       <td className="p-4">₦{order.amount ? order.amount.toFixed(2) : "0.00"}</td>
       <td className="p-4">
         <OrderStatusSelect
@@ -16,7 +25,7 @@ const OrderTableRow = ({ order, userDisplayName, onStatusChange, onArchive, onDe
           onChange={(e) => onStatusChange(order._id, e.target.value)}
         />
       </td>
-      <td className="p-4">{order.paymentMethod}</td>
+      <td className="p-4">{paymentMethodLabel}</td>
       <td className="p-4">{new Date(order.date).toLocaleDateString()}</td>
       <td className="p-4">
         <div className="flex gap-2">

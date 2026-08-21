@@ -1,17 +1,26 @@
 import OrderStatusSelect from "./OrderStatusSelect";
 
 const OrderCard = ({ order, userDisplayName, onStatusChange, onArchive, onDelete }) => {
-return (
+  const shippingAddress = order.shippingDetails?.address ?? "—";
+
+  // Order model doesn't store a payment method; derive a friendly label from isPaid.
+  const paymentMethodLabel = order.paymentMethod
+    ? order.paymentMethod
+    : order.isPaid
+    ? "Paid"
+    : "Pending payment";
+
+  return (
     <div
-            className={`bg-white shadow-md rounded-xl p-4 space-y-2 border ${
-            order.isArchived ? "opacity-70" : ""
-        }`}
+      className={`bg-white shadow-md rounded-xl p-4 space-y-2 border ${
+        order.isArchived ? "opacity-70" : ""
+      }`}
     >
       <div>
         <strong>User:</strong> {userDisplayName}
       </div>
       <div>
-        <strong>Address:</strong> {order.address}
+        <strong>Address:</strong> {shippingAddress}
       </div>
       <div>
         <strong>Total:</strong> ₦{order.amount ? order.amount.toFixed(2) : "0.00"}
@@ -25,7 +34,7 @@ return (
         />
       </div>
       <div>
-        <strong>Payment Method:</strong> {order.paymentMethod}
+        <strong>Payment Method:</strong> {paymentMethodLabel}
       </div>
       <div>
         <strong>Date:</strong> {new Date(order.date).toLocaleDateString()}
