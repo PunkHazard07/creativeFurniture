@@ -41,7 +41,7 @@ export const useDashboardStore = create((set, get) => ({
                 `/dash-metrics?timePeriod=${timePeriod}&ordersPage=${ordersPage}&productsPage=${productsPage}&pageSize=5`
             );
 
-            if (!data) return; // refresh failed, already redirected to /login
+            if (!data) return; 
 
             if (data.ok && data.success) {
                 set({ dashboardData: data.data, error: null, loading: false });
@@ -60,7 +60,7 @@ export const useDashboardStore = create((set, get) => ({
         try {
             const data = await fetchWithAuth(`/sales-chart?days=${days}`);
 
-            if (!data) return; // refresh failed, already redirected to /login
+            if (!data) return;
 
             if (data.ok && data.success) {
                 set({ salesChartData: data.data, salesChartLoading: false });

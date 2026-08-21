@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 import Spinner from "../components/Spinner";
 
 const OrderConfirmationPage = () => {
@@ -32,13 +33,12 @@ const OrderConfirmationPage = () => {
           const orderId = localOrder._id;
           console.log("Verifying Paystack transaction for order:", orderId);
 
-          const verifyResponse = await fetch(
-            `${import.meta.env.VITE_BASE_URL}/paystack/verify/${reference}/${orderId}`,
+          const verifyResponse = await fetchWithAuth(
+            `/paystack/verify/${reference}/${orderId}`,
             {
               headers: {
                 "Content-Type": "application/json",
               },
-              credentials: "include",
             }
           );
 

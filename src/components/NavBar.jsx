@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom'
-import { FaShoppingCart, FaUser, FaBars, FaTimes } from 'react-icons/fa'
-import { useSelector, useDispatch } from 'react-redux'
-import { logoutSuccess } from '../redux/authSlice'
-import { clearCart } from '../redux/cartSlice'
+import { FaShoppingCart, FaUser, FaBars, FaTimes } from 'react-icons/fa';
+import { useSelector, useDispatch } from 'react-redux';
+import { logoutSuccess } from '../redux/authSlice';
+import { clearCart } from '../redux/cartSlice';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 
 const NavBar = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -21,12 +22,11 @@ const NavBar = () => {
 
     const handleLogout = async () => {
     try {
-        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/logoutUser`, {
+        const response = await fetchWithAuth(`/logoutUser`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include',
         });
 
         const data = await response.json();
@@ -67,7 +67,7 @@ const NavBar = () => {
 
             {/* Logo & Business Name */}
             <Link to="/" className="flex items-center space-x-2">
-                <img src="/logo.jpg" alt="Creative Furniture Logo" className='h-10 sm:h-12 w-auto object-contain rounded' />
+                <img src="/logo.png" alt="Creative Furniture Logo" className='h-10 sm:h-12 w-auto object-contain rounded' />
             </Link>
 
             {/* Navigation Links */}

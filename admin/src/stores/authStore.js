@@ -3,6 +3,8 @@ import { create } from 'zustand';
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const readStoredToken = () => localStorage.getItem("token");
 
+let refreshPromise = null
+
 export const useAuthStore = create((set, get) => ({
     token: readStoredToken(),
     isValidToken: false,

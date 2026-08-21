@@ -37,7 +37,7 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
-      'import/no-unresolved': 'error',
+      'import/no-unresolved': ['error', { ignore: ['^/']}],
       'import/named': 'error',
       'import/no-duplicates': 'warn',
     },

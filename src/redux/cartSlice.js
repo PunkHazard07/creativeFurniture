@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 
 //load cart from localStorage if it exist(for unauthenticated users)
 const loadCartFromLocalStorage = () => {
@@ -33,12 +34,11 @@ export const addItemToCart = createAsyncThunk(
     "cart/addItemToCart",
     async ({ productID, quantity = 1 }, { rejectWithValue }) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/add`, {
+            const response = await fetchWithAuth(`/cart/add`, {
                 method: 'POST',
                 headers: {
                     "Content-Type": "application/json",
                 },
-                credentials: 'include',
                 body: JSON.stringify({ productId: productID, quantity }),
             });
 
@@ -60,9 +60,8 @@ export const fetchCart = createAsyncThunk(
     'cart/fetchCart',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/items`, {
+            const response = await fetchWithAuth(`/cart/items`, {
                 method: 'GET',
-                credentials: 'include',
             });
 
             const result = await response.json();
@@ -82,12 +81,11 @@ export const updateItemQuantity = createAsyncThunk(
     'cart/updateItemQuantity',
     async ({ productID, delta }, { rejectWithValue }) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/quantity`, {
+            const res = await fetchWithAuth(`/cart/quantity`, {
                 method: 'PATCH',
                 headers: {
                     "Content-Type": "application/json",
                 },
-                credentials: 'include',
                 body: JSON.stringify({ productId: productID, delta }),
             });
 
@@ -111,12 +109,11 @@ export const removeItemFromCart = createAsyncThunk(
     'cart/removeItemFromCart',
     async (productID, { rejectWithValue }) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/remove`, {
+            const res = await fetchWithAuth(`/cart/remove`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include',
                 body: JSON.stringify({ productId: productID }),
             });
 
@@ -139,9 +136,8 @@ export const clearCartFromBackend = createAsyncThunk(
     'cart/clearCartOnBackend',
     async (_, { rejectWithValue }) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/clear`, {
+            const res = await fetchWithAuth(`/cart/clear`, {
                 method: 'DELETE',
-                credentials: 'include',
             });
 
             const data = await res.json();
@@ -189,7 +185,6 @@ const cartSlice = createSlice({
             // Save updated cart to local storage
             localStorage.setItem('cartItems', JSON.stringify(state.cartItems));
         },
-
         decreaseQuantity: (state, action) => {
             const item = state.cartItems.find(item => item.id === action.payload);
             if (item && item.quantity > 1) {

@@ -3,6 +3,8 @@ import { Route, Routes } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { fetchCart } from './redux/cartSlice';
 import { checkAuthStatus } from './redux/authSlice';
+import { useTokenRefresh } from './hooks/useTokenRefresh';
+import { useSessionExpiredListener } from './hooks/useSessionExpiredListener';
 import Home from './pages/Home';
 import About from './pages/About';
 import Cart from './pages/Cart';
@@ -28,6 +30,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 const App = () => {
   const dispatch = useDispatch();
+  useTokenRefresh();
+  useSessionExpiredListener();
+
   useEffect(() => {
     dispatch(checkAuthStatus())
       .unwrap()

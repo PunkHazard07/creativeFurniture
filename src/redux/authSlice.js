@@ -1,15 +1,15 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 
 export const checkAuthStatus = createAsyncThunk(
     "auth/checkAuthStatus",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/user/profile`, {
+            const response = await fetchWithAuth(`/user/profile`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                credentials: "include",
             });
 
             const data = await response.json();

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 import { clearCartFromBackend } from "../redux/cartSlice";
 import BillingForm from "../components/Checkout/BillingForm";
 import CheckOrderSummary from "../components/Checkout/CheckOrderSummary";
@@ -66,13 +67,12 @@ const Checkout = () => {
     }));
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/paystack/init`, {
+      const response = await fetchWithAuth('/paystack/init', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Idempotency-Key": idempotencyKey,
         },
-        credentials: "include",
         body: JSON.stringify({
           items: orderItems,
           shippingDetails

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { fetchWithAuth } from "../../utils/fetchWithAuth";
 
 export const useOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -9,11 +10,10 @@ export const useOrders = () => {
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_BASE_URL}/user-orders`, {
+      const response = await fetchWithAuth(`/user-orders`, {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include",
       });
 
       const data = await response.json();
