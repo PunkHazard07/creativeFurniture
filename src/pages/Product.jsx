@@ -127,7 +127,7 @@ const Product = () => {
           </button>
           
           {/* Stock details */}
-          {!isProductUnavailable && product.quantity <= 5 && (
+          {!isProductUnavailable && product.quantity <= 3 && (
             <p className="mt-3 text-amber-600 text-sm">
               Only {product.quantity} left in stock - order soon!
             </p>

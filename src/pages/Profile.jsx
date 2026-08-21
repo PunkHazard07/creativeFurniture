@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
 import LoadingState from "../components/Profile/LoadingState";
 import UserCard from "../components/Profile/UserCard";
 import ProfileOrderSummary from "../components/Profile/ProfileOrderSummary";
@@ -19,8 +20,8 @@ const Profile = () => {
       };
 
       const [userRes, ordersRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_BASE_URL}/user/profile`, { headers, credentials: 'include' }),
-        fetch(`${import.meta.env.VITE_BASE_URL}/user-orders`, { headers, credentials: 'include' }),
+        fetchWithAuth('/user/profile', { headers }),
+        fetchWithAuth('/user-orders', { headers }),
       ]);
 
       if (!userRes.ok) throw new Error("Failed to fetch user profile.");
