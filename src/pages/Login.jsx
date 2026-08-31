@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../redux/authSlice';
+import { checkAuthStatus } from '../redux/authSlice';
 import { clearCart, fetchCart } from '../redux/cartSlice';
+import ErrorAlert from '../components/ErrorAlert';
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const localCart = useSelector((state) => state.cart.cartItems); // Get cart items from Redux store
+  const localCart = useSelector((state) => state.cart.cartItems); 
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,39 +27,36 @@ const Login = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
       const loginData = await loginResponse.json();
       
       if (loginResponse.ok) {
-        const token = loginData.token;
-        
-        //save token in redux and localStorage
-        dispatch(login({token}));
+        // Dispatch checkAuthStatus to update Redux state
+        await dispatch(checkAuthStatus()).unwrap();
 
         // only attempt to merge cart if there are items in local cart
         if (localCart.length > 0) {
           
           try {
               //map items to match backend expectations
-              const itemsToMerge = localCart.map(item =>({
-                id: item.id || item.productID,
-                productID: item.id || item.productID,
+            const itemsToMerge = localCart.map(item =>({
+                productId: item.id || item.productID,
                 quantity: item.quantity,
-                price: item.price 
               }));
 
-              const mergeResponse = await fetch('http://localhost:8080/api/cart/merge', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ items: itemsToMerge }),
+            const mergeResponse = await fetch(`${import.meta.env.VITE_BASE_URL}/cart/merge`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({ items: itemsToMerge }),
               });
 
-              const mergeData = await mergeResponse.json();
+            const mergeData = await mergeResponse.json();
 
               if(mergeData.success) {
                 //clear local cart and fetch updated cart from server
@@ -66,7 +64,7 @@ const Login = () => {
                 await dispatch(fetchCart()).unwrap();
                 console.log('Cart merged successfully')
               } else {
-                console.warn('Cart merged successfully:', mergeData.message);
+                console.warn('Cart merge failed:', mergeData.message);
               }
           }  catch (mergeError) {
             console.error('Error merging cart:', mergeError);
@@ -81,11 +79,10 @@ const Login = () => {
         //check if we need to redirect to checkout page
         const shouldRedirectToCheckout = localStorage.getItem('redirectToCheckout') === 'true';
         if (shouldRedirectToCheckout) {
-          //clear the flag 
-          localStorage.removeItem('redirectToCheckout'); // Clear the flag
+          localStorage.removeItem('redirectToCheckout'); 
           navigate('/checkout'); // Redirect to checkout page
         } else {
-          navigate('/'); // Redirect to home page
+          navigate('/'); 
         }
       
       } else {
@@ -110,7 +107,7 @@ const Login = () => {
       <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Login</h2>
         
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        {error && <ErrorAlert message={error} onClose={() => setError('')} />}
 
         {needsVerification ? (
           <div className="text-center">

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart, addItemToCart } from "../redux/cartSlice";
+import Spinner from "../components/Spinner";
 
 const Product = () => {
   const { id } = useParams(); // Get product ID from URL
@@ -10,6 +11,7 @@ const Product = () => {
   const [error, setError] = useState(null);
   const [addedToCart, setAddedToCart] = useState(false);
   const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -36,7 +38,6 @@ const Product = () => {
   const handleAddToCart = async () => {
     if (!product || isProductUnavailable) return; // Return if product is not available or out of stock
 
-    const token = localStorage.getItem('authToken'); // check if user is logged in
     const cartItem = {
       id: product._id,  // for redux/UI
       name: product.name,
@@ -47,7 +48,7 @@ const Product = () => {
     };
 
     try {
-      if (token && token !== 'undefined' && token !== 'null') {
+      if (isAuthenticated) {
         await dispatch(addItemToCart({productID: product._id, quantity: 1})).unwrap();
         console.log('Dispatched addItemToCart to backend');
       } else {
@@ -63,7 +64,7 @@ const Product = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-indigo-500"></div></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center"><Spinner size="lg" color="indigo" /></div>;
   if (error) return <div className="min-h-screen flex items-center justify-center"><p className="text-center text-red-500 p-4 bg-red-50 rounded-lg">{error}</p></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center"><p className="text-center text-gray-500">Product not found</p></div>;
 
@@ -126,7 +127,7 @@ const Product = () => {
           </button>
           
           {/* Stock details */}
-          {!isProductUnavailable && product.quantity <= 5 && (
+          {!isProductUnavailable && product.quantity <= 3 && (
             <p className="mt-3 text-amber-600 text-sm">
               Only {product.quantity} left in stock - order soon!
             </p>

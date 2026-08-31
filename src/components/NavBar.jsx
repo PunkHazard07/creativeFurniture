@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom'
-import { FaShoppingCart, FaUser, FaBars, FaTimes } from 'react-icons/fa'
-import { useSelector, useDispatch } from 'react-redux'
-import { logout } from '../redux/authSlice'
+import { FaShoppingCart, FaUser, FaBars, FaTimes } from 'react-icons/fa';
+import { useSelector, useDispatch } from 'react-redux';
+import { logoutSuccess } from '../redux/authSlice';
+import { clearCart } from '../redux/cartSlice';
+import { fetchWithAuth } from '../utils/fetchWithAuth';
 
 const NavBar = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -19,39 +21,30 @@ const NavBar = () => {
     const navigate = useNavigate()
 
     const handleLogout = async () => {
-    const token = localStorage.getItem('authToken');
-
     try {
-        if (token) {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/logoutUser`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+        const response = await fetchWithAuth(`/logoutUser`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
 
-            // Attempt to parse the response regardless of status
-            const data = await response.json();
+        const data = await response.json();
 
-            if (!response.ok) {
-                console.warn('Server logout failed:', data.message);
-                // You can choose to alert the user here if needed
-            }
+        if (!response.ok) {
+            console.warn('Server logout failed:', data.message);
         }
+
     } catch (error) {
         console.warn('Logout request failed:', error.message || error);
-        // Log the error but continue to clear the session
     } finally {
         // Clear auth info and redirect no matter what
-        localStorage.removeItem('authToken');
-        dispatch(logout());
+        dispatch(logoutSuccess());
+        dispatch(clearCart());
         navigate('/');
     }
 };
 
-
-    // 🔍 Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -74,9 +67,8 @@ const NavBar = () => {
 
             {/* Logo & Business Name */}
             <Link to="/" className="flex items-center space-x-2">
-                <p className="text-xl font-bold">Creative Furniture</p>
+                <img src="/logo.png" alt="Creative Furniture Logo" className='h-10 sm:h-12 w-auto object-contain rounded' />
             </Link>
-
 
             {/* Navigation Links */}
             <div

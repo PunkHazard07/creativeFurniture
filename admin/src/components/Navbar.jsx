@@ -1,31 +1,14 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../stores/authStore";
 
-const Navbar = ({setToken}) => {
+const Navbar = () => {
 const navigate = useNavigate();
+const logout = useAuthStore((s) => s.logout);
 
 const handleLogout = async () => {
-    try {
-    const response = await fetch("http://localhost:8080/api/logout-admin", {
-        method: "POST",
-        credentials: "include"
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-        throw new Error(data.message || "Logout failed");
-    }
-
-      // Remove token from local storage
-    localStorage.removeItem("token");
-    setToken(""); // Update token state
-
+    await logout()
     alert("Logged out successfully!");
-      navigate("/login"); // Redirect to login page
-    } catch (error) {
-    console.error("Logout Error:", error.message);
-    }
+    navigate("/login");
 };
 
 return (
@@ -41,7 +24,7 @@ return (
         Logout
     </button>
     </nav>
-);
+  );
 };
 
 export default Navbar;

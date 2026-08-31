@@ -1,45 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { fetchWithAuth } from "../utils/api";
 
-const Add = () => {
+const AddProduct = () => {
   const [file, setFile] = useState(null); 
   const [productName, setProductName] = useState(""); 
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Living Room");
   const [price, setPrice] = useState("");
-  const [quantity, setQuantity] = useState("1"); // Added quantity state
-  const [isOutOfStock, setIsOutOfStock] = useState(false); // Added isOutOfStock state
+  const [quantity, setQuantity] = useState("1");
+  const [isOutOfStock, setIsOutOfStock] = useState(false);
+  const [message, setMessage] = useState(null); 
+
+  const messageTimeoutRef = useRef(null);
+
+  const showMessage = (type, text, duration = 4000) => {
+    if (messageTimeoutRef.current) clearTimeout(messageTimeoutRef.current);
+    setMessage({ type, text });
+    messageTimeoutRef.current = setTimeout(() => setMessage(null), duration);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (messageTimeoutRef.current) clearTimeout(messageTimeoutRef.current);
+    };
+  }, []);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
-  // Handle out of stock checkbox change
   const handleOutOfStockChange = (e) => {
     setIsOutOfStock(e.target.checked);
-    // If marking as out of stock, set quantity to 0
     if (e.target.checked) {
       setQuantity("0");
     }
   };
 
-  // Handle quantity change
   const handleQuantityChange = (e) => {
     const newQuantity = e.target.value;
     setQuantity(newQuantity);
-    
-    // If quantity is set to 0, automatically mark as out of stock
+
     if (parseInt(newQuantity) === 0) {
       setIsOutOfStock(true);
     } else if (parseInt(newQuantity) > 0 && isOutOfStock) {
-      // If adding quantity and product was marked as out of stock, update status
       setIsOutOfStock(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("adminToken");
 
     try {
       const formData = new FormData();
@@ -47,19 +56,22 @@ const Add = () => {
       formData.append("name", productName);
       formData.append("description", description);
       formData.append("category", category);
-      formData.append("price", price); // Add price to form data
-      formData.append("quantity", quantity); // Add quantity to form data
-      formData.append("isOutOfStock", isOutOfStock); // Add isOutOfStock to form data
+      formData.append("price", price);
+      formData.append("quantity", quantity);
+      formData.append("isOutOfStock", isOutOfStock);
 
-      
       const response = await fetchWithAuth("/add", {
         method: "POST",
         body: formData,
       });
 
-      if(response.error){
-        throw new Error(response.error|| "Something went wrong")
+      if (!response) return; 
+
+      if (!response.ok) {
+        throw new Error(response.message || "Something went wrong");
       }
+
+      showMessage("success", `"${response.product?.name || productName}" was added successfully!`);
 
       //reset form after successful submission
       setFile(null);
@@ -67,10 +79,9 @@ const Add = () => {
       setDescription("");
       setCategory("Living Room");
       setPrice("");
-      setQuantity("1"); // Reset quantity
-      setIsOutOfStock(false); // Reset isOutOfStock
+      setQuantity("1");
+      setIsOutOfStock(false);
 
-      //reset file input
       const fileInput = document.getElementById("fileInput");
       if (fileInput) {
         fileInput.value = "";
@@ -78,13 +89,34 @@ const Add = () => {
 
     } catch (error) {
       console.error("Error:", error.message);
-      alert(`Error: ${error.message}`);
+      showMessage("error", `Error: ${error.message}`);
     }
   };
 
   return (
     <div className="w-full max-w-3xl mx-auto bg-white shadow-md rounded-lg p-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Add New Product</h2>
+
+      {message && (
+        <div
+          role="status"
+          className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium border flex items-center justify-between ${
+            message.type === "success"
+              ? "bg-green-50 text-green-800 border-green-200"
+              : "bg-red-50 text-red-800 border-red-200"
+          }`}
+        >
+          <span>{message.text}</span>
+          <button
+            type="button"
+            onClick={() => setMessage(null)}
+            className="ml-4 text-current opacity-60 hover:opacity-100"
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         {/* Image Upload */}
@@ -195,4 +227,4 @@ const Add = () => {
   );
 };
 
-export default Add;
+export default AddProduct;

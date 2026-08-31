@@ -1,5 +1,5 @@
 import React from 'react'
-import CategorySection from '../components/CategorySection'
+import CategorySection from '../components/Category/CategorySection'
 import Hero from '../components/Hero'
 import LatestCollection from '../components/LatestCollection'
 import OurPolicy from '../components/OurPolicy'

@@ -1,24 +1,68 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { fetchWithAuth } from "../utils/fetchWithAuth";
+
+export const checkAuthStatus = createAsyncThunk(
+    "auth/checkAuthStatus",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await fetchWithAuth(`/user/profile`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                return rejectWithValue(data.message || "Session invalid");
+            }
+
+            return data.user;
+        } catch (error) {
+            return rejectWithValue(error.message || "Network error checking auth status");
+        }
+    }
+);
 
 const authSlice = createSlice({
     name: "auth",
     initialState: {
-        isAuthenticated: !!localStorage.getItem('authToken') //check token existence
+        isAuthenticated: false,
+        user: null,
+        loading: true
     },
     reducers: {
-        login: (state, action) => {
-            const token = action.payload.token;
-            if (token) {
-                state.isAuthenticated = true;
-                localStorage.setItem('authToken', token); //save token in local storage
-            }
+        // Call this after a successful POST to your /login endpoint
+        loginSuccess: (state, action) => {
+            state.isAuthenticated = true;
+            state.user = action.payload?.user || null;
+            state.loading = false;
         },
-        logout: (state) => {
+        // Call this after a successful POST to your /logout endpoint
+        logoutSuccess: (state) => {
             state.isAuthenticated = false;
-            localStorage.removeItem('authToken'); // Remove token on logout
+            state.user = null;
+            state.loading = false;
         },
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(checkAuthStatus.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(checkAuthStatus.fulfilled, (state, action) => {
+                state.isAuthenticated = true;
+                state.user = action.payload;
+                state.loading = false;
+            })
+            .addCase(checkAuthStatus.rejected, (state) => {
+                state.isAuthenticated = false;
+                state.user = null;
+                state.loading = false;
+            });
     },
 });
 
-export const { login, logout } = authSlice.actions;
+export const { loginSuccess, logoutSuccess } = authSlice.actions;
 export default authSlice.reducer;

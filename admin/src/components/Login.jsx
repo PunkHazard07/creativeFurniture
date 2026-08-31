@@ -1,46 +1,21 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../stores/authStore";
 
-const AdminLogin = ({setToken}) => {
+const AdminLogin = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+
+    const login = useAuthStore((s) => s.login);
+    const isLoggingIn = useAuthStore((s) => s.isLoggingIn);
+    const loginError = useAuthStore((s) => s.loginError);
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setError("");
-        setLoading(true);
-
-        try {
-            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/login-admin`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email,
-                    password,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Login failed');
-            }
-
-            //store token in local storage
-            localStorage.setItem('token', data.accessToken);
-            localStorage.setItem('refreshToken', data.refreshToken);
-            setToken(data.accessToken); //update token state
-
+        const result = await login(email, password);
+        if (result.success) {
             navigate('/dashboard');
-        } catch (error) {
-            setError(error.message || 'Login failed');
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -49,7 +24,7 @@ const AdminLogin = ({setToken}) => {
         <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
             <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Admin Login</h2>
 
-            {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+            {loginError && <p className="text-red-500 text-center mb-4">{loginError}</p>}
 
             <form onSubmit={handleLogin} className="flex flex-col space-y-4">
                 <div>
@@ -78,10 +53,10 @@ const AdminLogin = ({setToken}) => {
 
                 <button
                     type="submit"
-                    disabled={loading}
+                    disabled={isLoggingIn}
                     className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg transition duration-300"
                 >
-                    {loading ? "Logging in..." : "Login"}
+                    {isLoggingIn ? "Logging in..." : "Login"}
                 </button>
             </form>
 
@@ -100,4 +75,3 @@ const AdminLogin = ({setToken}) => {
 };
 
 export default AdminLogin;
-
