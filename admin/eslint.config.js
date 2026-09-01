@@ -3,7 +3,7 @@ import globals from 'globals'
 import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
-import importX from 'eslint-plugin-import-x'
+import importX, { createNodeResolver } from 'eslint-plugin-import-x'
 import unusedImports from 'eslint-plugin-unused-imports'
 
 export default [
@@ -21,9 +21,9 @@ export default [
     },
     settings: {
       react: { version: 'detect' },
-      'import-x/resolver': {
-        node: { extensions: ['.js', '.jsx'] },
-      },
+      'import-x/resolver-next': [
+        createNodeResolver({ extensions: ['.js', '.jsx'] }),
+      ]
     },
     plugins: {
       react,
