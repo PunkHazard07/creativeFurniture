@@ -172,5 +172,16 @@ export const getUserDisplayName = (order) => {
     if (order.userId && typeof order.userId === "object") {
         return order.userId.username || "Anonymous User";
     }
-return "User #" + (order.userId?.substring(0, 6) || "Unknown");
+
+    // order.userId is null when the referenced account no longer exists
+    // (populate finds nothing). Fall back to the shipping details captured
+    // at checkout time so historical orders still show a real name.
+    const { firstName, lastName } = order.shippingDetails || {};
+    const fallbackName = [firstName, lastName].filter(Boolean).join(" ");
+
+    if (order.userId === null) {
+        return fallbackName ? `${fallbackName} (Deleted User)` : "Deleted User";
+    }
+
+    return "User #" + (order.userId?.substring(0, 6) || "Unknown");
 };
